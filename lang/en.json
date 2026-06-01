@@ -1,0 +1,16 @@
+{
+  "pf2e-customizations.settings.itemDurability.name": "Item Durability Fields",
+  "pf2e-customizations.settings.itemDurability.hint": "Show HP, Max HP, Broken Threshold, and Hardness fields on physical item sheets (weapons, armor, equipment, etc.).",
+
+  "pf2e-customizations.durability.hardness": "Hardness",
+  "pf2e-customizations.durability.hp": "Hit Points",
+  "pf2e-customizations.durability.bt": "Broken Threshold",
+
+  "pf2e-customizations.macro.setItemDurability.title": "Set Item Durability",
+  "pf2e-customizations.macro.setItemDurability.actor": "Character",
+  "pf2e-customizations.macro.setItemDurability.item": "Item",
+  "pf2e-customizations.macro.setItemDurability.save": "Save",
+  "pf2e-customizations.macro.setItemDurability.cancel": "Cancel",
+  "pf2e-customizations.macro.setItemDurability.noActors": "No owned characters found.",
+  "pf2e-customizations.macro.setItemDurability.saved": "Updated durability for {name}."
+}

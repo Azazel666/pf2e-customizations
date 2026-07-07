@@ -1,0 +1,28 @@
+{
+  "pf2e-customizations.settings.itemDurability.name": "Hållbarhetsfält för föremål",
+  "pf2e-customizations.settings.itemDurability.hint": "Visa Strukturpoäng, Max Strukturpoäng, Brottgräns och Hårdhet på fysiska föremålsblad (vapen, rustning, utrustning m.m.).",
+
+  "pf2e-customizations.durability.hardness": "Hårdhet",
+  "pf2e-customizations.durability.hp": "Strukturpoäng",
+  "pf2e-customizations.durability.bt": "Brottgräns",
+
+  "pf2e-customizations.macro.setItemDurability.title": "Ange föremålshållbarhet",
+  "pf2e-customizations.macro.setItemDurability.actor": "Karaktär",
+  "pf2e-customizations.macro.setItemDurability.item": "Föremål",
+  "pf2e-customizations.macro.setItemDurability.save": "Spara",
+  "pf2e-customizations.macro.setItemDurability.cancel": "Avbryt",
+  "pf2e-customizations.macro.setItemDurability.noActors": "Inga ägda karaktärer hittades.",
+  "pf2e-customizations.macro.setItemDurability.saved": "Hållbarhet uppdaterades för {name}.",
+
+  "pf2e-customizations.macro.applyItemDamage.title": "Skada föremål",
+  "pf2e-customizations.macro.applyItemDamage.item": "Föremål",
+  "pf2e-customizations.macro.applyItemDamage.damage": "Skada",
+  "pf2e-customizations.macro.applyItemDamage.apply": "Verkställ",
+  "pf2e-customizations.macro.applyItemDamage.cancel": "Avbryt",
+  "pf2e-customizations.macro.applyItemDamage.gmOnly": "Endast SL kan utdela skada på föremål.",
+  "pf2e-customizations.macro.applyItemDamage.noToken": "Ingen token vald. Välj en token, eller använd Ange föremålshållbarhet för att redigera manuellt.",
+  "pf2e-customizations.macro.applyItemDamage.noItems": "Denna tokens karaktär har inga fysiska föremål.",
+  "pf2e-customizations.macro.applyItemDamage.notConfigured": "{name} har varken Strukturpoäng eller Hårdhet konfigurerat. Ange dessa först med Ange föremålshållbarhet.",
+  "pf2e-customizations.macro.applyItemDamage.applied": "Tillfogade {damage} skada på {name} ({value}/{max} Strukturpoäng kvar).",
+  "pf2e-customizations.macro.applyItemDamage.broken": "{name} är nu trasig!"
+}

@@ -1,0 +1,9 @@
+.item-durability-fields .form-fields {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.item-durability-fields .sep {
+  padding: 0 2px;
+}

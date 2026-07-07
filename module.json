@@ -1,0 +1,42 @@
+{
+  "id": "pf2e-customizations",
+  "title": "PF2e Customizations",
+  "version": "1.0.0",
+  "description": "An umbrella module for small Pathfinder 2e quality-of-life features, each independently toggleable via GM settings.",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Mattias Jöraas",
+      "flags": {}
+    }
+  ],
+  "flags": {
+    "canUpload": true
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles/features/item-durability.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "sv",
+      "name": "Svenska",
+      "path": "lang/sv.json"
+    }
+  ]
+}

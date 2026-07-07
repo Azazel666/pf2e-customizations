@@ -12,5 +12,17 @@
   "pf2e-customizations.macro.setItemDurability.save": "Save",
   "pf2e-customizations.macro.setItemDurability.cancel": "Cancel",
   "pf2e-customizations.macro.setItemDurability.noActors": "No owned characters found.",
-  "pf2e-customizations.macro.setItemDurability.saved": "Updated durability for {name}."
+  "pf2e-customizations.macro.setItemDurability.saved": "Updated durability for {name}.",
+
+  "pf2e-customizations.macro.applyItemDamage.title": "Apply Item Damage",
+  "pf2e-customizations.macro.applyItemDamage.item": "Item",
+  "pf2e-customizations.macro.applyItemDamage.damage": "Damage",
+  "pf2e-customizations.macro.applyItemDamage.apply": "Apply",
+  "pf2e-customizations.macro.applyItemDamage.cancel": "Cancel",
+  "pf2e-customizations.macro.applyItemDamage.gmOnly": "Only the GM can apply item damage.",
+  "pf2e-customizations.macro.applyItemDamage.noToken": "No token selected. Select a token, or use Set Item Durability to edit an item manually.",
+  "pf2e-customizations.macro.applyItemDamage.noItems": "This token's actor has no physical items.",
+  "pf2e-customizations.macro.applyItemDamage.notConfigured": "{name} has no configured Hit Points or Hardness. Set them first with Set Item Durability.",
+  "pf2e-customizations.macro.applyItemDamage.applied": "Applied {damage} damage to {name} ({value}/{max} HP remaining).",
+  "pf2e-customizations.macro.applyItemDamage.broken": "{name} is now broken!"
 }

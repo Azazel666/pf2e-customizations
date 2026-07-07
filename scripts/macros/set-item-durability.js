@@ -1,12 +1,12 @@
-const PHYSICAL_TYPES = ['weapon', 'armor', 'equipment', 'backpack', 'treasure', 'consumable'];
+export const PHYSICAL_TYPES = ['weapon', 'armor', 'equipment', 'backpack', 'treasure', 'consumable'];
 
-function getPhysicalItems(actor) {
+export function getPhysicalItems(actor) {
   return actor.items
     .filter(i => PHYSICAL_TYPES.includes(i.type))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function buildItemOptions(items, selectedId) {
+export function buildItemOptions(items, selectedId) {
   if (!items.length) return '<option value="" disabled>—</option>';
   return items
     .map(i => `<option value="${i.id}"${i.id === selectedId ? ' selected' : ''}>${i.name}</option>`)

@@ -48,6 +48,32 @@ This macro is always available once the module is enabled — no additional sett
 
 ---
 
+### Apply Item Damage (Macro)
+
+A GM-only macro that applies raw damage to an item, subtracting Hardness and reducing the item's current HP — without doing the math by hand.
+
+**Setup:** Create a world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.applyItemDamage();
+```
+
+**Usage:**
+
+1. As the GM, select the token whose item took damage.
+2. Run the macro.
+3. Pick the item from the **Item** dropdown — its current HP and Hardness are shown.
+4. Enter the raw **Damage** amount.
+5. Click **Apply** — Hardness is subtracted from the damage first, and the remainder reduces the item's current HP (never below 0).
+
+If the item's HP and Hardness haven't been configured yet (both still unset), the macro shows an error instead — set them first via **Set Item Durability**. If the resulting HP drops to or below the item's Broken Threshold, an additional notification warns that the item is now broken.
+
+**Supported item types:** Weapons, Armor, Equipment, Containers, Treasure, Consumables
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it; it requires a token to be selected first.
+
+---
+
 ## Installation
 
 ### Manual

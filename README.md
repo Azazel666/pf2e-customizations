@@ -74,6 +74,30 @@ This macro is always available once the module is enabled — no additional sett
 
 ---
 
+### Lock Picking Minigame
+
+An interactive pin-tumbler puzzle that stands in for a flat Thievery check when a PC picks a lock. Pin count is derived from the lock's difficulty tier; each pin's forgiveness is derived from the acting character's live Thievery modifier vs. the lock's DC.
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestLockPick();
+```
+
+**Usage:**
+
+1. As the GM, run the macro.
+2. Pick the target **Character** (defaults to your controlled token if it's a player-owned PC) and the **Lock Difficulty** — Simple (DC 15), Average (DC 20), Good (DC 25), Superior (DC 30), or a Custom DC.
+3. Click **Send** — a chat card posts describing the lock and an **Attempt Lock** button.
+4. Any player who owns that character can click **Attempt Lock**. Only one player can attempt at a time — others see an "in progress" status until it resolves.
+5. The puzzle opens to a brief instructions screen first; clicking **Begin** generates the pins. Drag each pin's slider and watch the tension indicator to feel out the correct spot, then click **Set Pin**.
+6. A missed pin is a recoverable mistake (it resets and re-randomizes) — but reaching the mistake threshold ends the attempt as a **critical failure** (broken pick). Click **Give Up** at any time to bank a safe **failure** instead of risking that; a plain failure leaves the card attemptable again.
+7. Completing all pins succeeds (with a bonus "critical success" flavor if done with zero mistakes) and removes the button. A critical failure shows a GM-only **Reset** control once new tools are narratively acquired.
+
+Enable via **Game Settings > Module Settings > Lock Picking Minigame**. The mistake threshold (default 3) is a separate world setting.
+
+---
+
 ## Installation
 
 ### Manual
@@ -90,11 +114,13 @@ Copy or clone this repository into your Foundry `Data/modules/` directory as `pf
 
 ## Configuration
 
-All features are disabled by default and require a world reload (`requiresReload: true`) when toggled. Settings are world-scoped and only visible to the GM.
+Each feature's toggle requires a world reload (`requiresReload: true`) when changed. Settings are world-scoped and only visible to the GM.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Item Durability Fields | Off | Show HP/hardness fields on physical item sheets |
+| Item Durability Fields | On | Show HP/hardness fields on physical item sheets |
+| Lock Picking Minigame | Off | Enable the interactive lock-picking puzzle |
+| Lock Picking Mistake Threshold | 3 | Mistakes allowed before a critical failure (no reload required) |
 
 ---
 

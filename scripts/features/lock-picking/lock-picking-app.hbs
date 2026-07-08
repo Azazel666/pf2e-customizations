@@ -1,0 +1,53 @@
+<div class="lock-picking-app {{#if (eq stage "puzzle")}}is-puzzle{{else}}is-instructions{{/if}}">
+  {{#if (eq stage "instructions")}}
+    <div class="lock-picking-instructions">
+      <h2>{{localize "pf2e-customizations.lockPicking.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.lockPicking.instructionsBody"}}</p>
+      <p class="lock-picking-lock-info">{{localize "pf2e-customizations.lockPicking.pinCountLabel"}}: {{pinCount}}</p>
+      <label class="lock-picking-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.lockPicking.dontShowAgain"}}
+      </label>
+      <div class="lock-picking-actions">
+        <button type="button" data-action="cancelInstructions">{{localize "pf2e-customizations.lockPicking.instructionsCancel"}}</button>
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.lockPicking.begin"}}</button>
+      </div>
+    </div>
+  {{else if helpVisible}}
+    <div class="lock-picking-instructions">
+      <h2>{{localize "pf2e-customizations.lockPicking.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.lockPicking.instructionsBody"}}</p>
+      <div class="lock-picking-actions">
+        <button type="button" data-action="closeHelp" class="default">{{localize "pf2e-customizations.lockPicking.closeHelp"}}</button>
+      </div>
+    </div>
+  {{else}}
+    <div class="lock-picking-puzzle{{#if shattered}} is-shattered{{/if}}">
+      <div class="lock-picking-header-row">
+        <p class="lock-picking-header">{{actorName}}</p>
+        <button type="button" class="lock-picking-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.lockPicking.helpButton'}}">?</button>
+      </div>
+      <p class="lock-picking-mistakes{{#if warningMistakes}} is-warning{{/if}}">
+        {{localize "pf2e-customizations.lockPicking.mistakes"}}: {{mistakes}} / {{mistakeThreshold}}
+      </p>
+      <div class="lock-picking-pins">
+        {{#each pins}}
+          <div class="lock-picking-pin is-{{state}}{{#if mistake}} is-mistake{{/if}}{{#if justSet}} is-just-set{{/if}}">
+            <div class="lock-picking-pin-dial-label">{{localize "pf2e-customizations.lockPicking.pinDialLabel"}}</div>
+            <div class="lock-picking-pin-dial" data-pin-index="{{index}}">
+              <div class="lock-picking-pin-dial-jitter">
+                <div class="lock-picking-pin-dial-face"></div>
+                <div class="lock-picking-pin-dial-debug"></div>
+                <div class="lock-picking-pin-dial-indicator"></div>
+              </div>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+      <div class="lock-picking-actions">
+        <button type="button" data-action="giveUp">{{localize "pf2e-customizations.lockPicking.giveUp"}}</button>
+        <button type="button" data-action="setPin" class="default">{{localize "pf2e-customizations.lockPicking.setPin"}}</button>
+      </div>
+    </div>
+  {{/if}}
+</div>

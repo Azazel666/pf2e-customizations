@@ -1,0 +1,209 @@
+.lock-picking-app {
+  padding: 8px;
+}
+
+.lock-picking-instructions p {
+  margin: 0 0 8px;
+}
+
+.lock-picking-header {
+  font-weight: bold;
+  margin: 0 0 4px;
+}
+
+.lock-picking-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lock-picking-help-button {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.lock-picking-dont-show-again {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.lock-picking-mistakes {
+  margin: 0 0 8px;
+}
+
+.lock-picking-mistakes.is-warning {
+  color: #b91c1c;
+  font-weight: bold;
+}
+
+.lock-picking-pins {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.lock-picking-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 96px;
+  opacity: 0.5;
+}
+
+.lock-picking-pin.is-active {
+  opacity: 1;
+}
+
+.lock-picking-pin.is-set {
+  opacity: 0.85;
+}
+
+.lock-picking-pin.is-mistake .lock-picking-pin-dial-face {
+  animation: lock-picking-mistake-flash 0.4s ease-out;
+}
+
+.lock-picking-pin.is-set .lock-picking-pin-dial-face {
+  background: #16a34a;
+}
+
+.lock-picking-pin.is-just-set .lock-picking-pin-dial-face {
+  animation: lock-picking-pin-set-flash 0.3s ease-out;
+}
+
+.lock-picking-pin-dial-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+}
+
+.lock-picking-pin-dial {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.lock-picking-pin-dial:active {
+  cursor: grabbing;
+}
+
+.lock-picking-pin:not(.is-active) .lock-picking-pin-dial {
+  pointer-events: none;
+}
+
+.lock-picking-pin-dial-jitter {
+  width: 100%;
+  height: 100%;
+}
+
+/* Static ring, no visual hint of window position — proximity is felt (jitter/resistance), never seen. */
+.lock-picking-pin-dial-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #374151;
+  border: 2px solid #1f2937;
+}
+
+/* Debug-only aid (lockPickingDebugShowWindow client setting): background is a conic-gradient set
+   inline from JS marking the safe/strain zones, left empty (transparent) when the setting is off. */
+.lock-picking-pin-dial-debug {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Rewritten every animation frame from JS (see #renderDialTransform in lock-picking-app.js),
+   not a CSS @keyframes animation — the physics-driven rotation/lerp/jitter values are continuous
+   and unpredictable, unlike the rest of this file's discrete, class-triggered one-shot animations. */
+.lock-picking-pin-dial-indicator {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 4px;
+  height: 28px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  transform-origin: 2px 28px;
+  will-change: transform;
+}
+
+.lock-picking-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lock-picking-puzzle.is-shattered {
+  pointer-events: none;
+}
+
+.lock-picking-puzzle.is-shattered .lock-picking-pin-dial-jitter {
+  animation: lock-picking-shatter 0.65s ease-out forwards;
+}
+
+@keyframes lock-picking-mistake-flash {
+  0% { background: #dc2626; }
+  100% { background: #374151; }
+}
+
+@keyframes lock-picking-pin-set-flash {
+  0% { background: #16a34a; box-shadow: 0 0 8px #16a34a; }
+  100% { background: #16a34a; box-shadow: none; }
+}
+
+@keyframes lock-picking-shatter {
+  0% { filter: none; transform: translate(0, 0); }
+  15% { transform: translate(-4px, 3px); }
+  30% { transform: translate(4px, -3px); }
+  45% { transform: translate(-3px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  100% { filter: grayscale(1) brightness(0.6); transform: translate(0, 0); }
+}
+
+.lock-picking-card-gm-dc {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 2px 0 4px;
+}
+
+.lock-picking-card-status {
+  margin-top: 4px;
+}
+
+.lock-picking-card-outcome {
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+.lock-picking-card-outcome.is-success {
+  color: #16a34a;
+}
+
+.lock-picking-card-outcome.is-failure {
+  color: #b91c1c;
+}
+
+.lock-picking-card-status-text {
+  font-style: italic;
+  margin: 4px 0;
+}

@@ -26,7 +26,7 @@
     ]
   },
   "esmodules": ["scripts/module.js"],
-  "styles": ["styles/features/item-durability.css"],
+  "styles": ["styles/features/item-durability.css", "styles/features/lock-picking.css"],
   "languages": [
     {
       "lang": "en",

@@ -11,6 +11,32 @@
   margin: 0 0 4px;
 }
 
+.lock-picking-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lock-picking-help-button {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.lock-picking-dont-show-again {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
 .lock-picking-mistakes {
   margin: 0 0 8px;
 }
@@ -44,41 +70,79 @@
   opacity: 0.85;
 }
 
-.lock-picking-pin.is-set .lock-picking-tension {
-  background: #16a34a;
-}
-
-.lock-picking-pin.is-mistake .lock-picking-tension {
+.lock-picking-pin.is-mistake .lock-picking-pin-dial-face {
   animation: lock-picking-mistake-flash 0.4s ease-out;
 }
 
-.lock-picking-tension-label {
+.lock-picking-pin.is-set .lock-picking-pin-dial-face {
+  background: #16a34a;
+}
+
+.lock-picking-pin.is-just-set .lock-picking-pin-dial-face {
+  animation: lock-picking-pin-set-flash 0.3s ease-out;
+}
+
+.lock-picking-pin-dial-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   opacity: 0.8;
 }
 
-/* Deliberately not a graded/continuous meter — only pulses on a discrete tick (see #onSlide in
-   lock-picking-app.js), as an accessibility echo of the audio cue, not a substitute for it. */
-.lock-picking-tension {
+.lock-picking-pin-dial {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.lock-picking-pin-dial:active {
+  cursor: grabbing;
+}
+
+.lock-picking-pin:not(.is-active) .lock-picking-pin-dial {
+  pointer-events: none;
+}
+
+.lock-picking-pin-dial-jitter {
   width: 100%;
-  height: 20px;
-  border-radius: 4px;
+  height: 100%;
+}
+
+/* Static ring, no visual hint of window position — proximity is felt (jitter/resistance), never seen. */
+.lock-picking-pin-dial-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
   background: #374151;
-  border: 1px solid #1f2937;
+  border: 2px solid #1f2937;
 }
 
-.lock-picking-tension.is-passing-tick {
-  animation: lock-picking-tick-passing 0.25s ease-out;
+/* Debug-only aid (lockPickingDebugShowWindow client setting): background is a conic-gradient set
+   inline from JS marking the safe/strain zones, left empty (transparent) when the setting is off. */
+.lock-picking-pin-dial-debug {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-.lock-picking-tension.is-click-tick {
-  animation: lock-picking-tick-click 0.3s ease-out;
-}
-
-.lock-picking-pin input[type='range'] {
-  width: 100%;
+/* Rewritten every animation frame from JS (see #renderDialTransform in lock-picking-app.js),
+   not a CSS @keyframes animation — the physics-driven rotation/lerp/jitter values are continuous
+   and unpredictable, unlike the rest of this file's discrete, class-triggered one-shot animations. */
+.lock-picking-pin-dial-indicator {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 4px;
+  height: 28px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  transform-origin: 2px 28px;
+  will-change: transform;
 }
 
 .lock-picking-actions {
@@ -88,19 +152,38 @@
   margin-top: 8px;
 }
 
+.lock-picking-puzzle.is-shattered {
+  pointer-events: none;
+}
+
+.lock-picking-puzzle.is-shattered .lock-picking-pin-dial-jitter {
+  animation: lock-picking-shatter 0.65s ease-out forwards;
+}
+
 @keyframes lock-picking-mistake-flash {
   0% { background: #dc2626; }
   100% { background: #374151; }
 }
 
-@keyframes lock-picking-tick-passing {
-  0% { background: #6b7280; }
-  100% { background: #374151; }
+@keyframes lock-picking-pin-set-flash {
+  0% { background: #16a34a; box-shadow: 0 0 8px #16a34a; }
+  100% { background: #16a34a; box-shadow: none; }
 }
 
-@keyframes lock-picking-tick-click {
-  0% { background: #16a34a; box-shadow: 0 0 8px #16a34a; }
-  100% { background: #374151; box-shadow: none; }
+@keyframes lock-picking-shatter {
+  0% { filter: none; transform: translate(0, 0); }
+  15% { transform: translate(-4px, 3px); }
+  30% { transform: translate(4px, -3px); }
+  45% { transform: translate(-3px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  100% { filter: grayscale(1) brightness(0.6); transform: translate(0, 0); }
+}
+
+.lock-picking-card-gm-dc {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 2px 0 4px;
 }
 
 .lock-picking-card-status {

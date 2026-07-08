@@ -1,4 +1,4 @@
-import { windowWidthPercentForDiff } from './lock-picking-logic.js';
+import { windowWidthPercentForDiff, strainMsForProficiencyRank } from './lock-picking-logic.js';
 import { LockPickingApp } from './lock-picking-app.js';
 
 const FLAG_SCOPE = 'pf2e-customizations';
@@ -68,14 +68,16 @@ async function onAttempt(message, config, actor) {
     return;
   }
 
-  const totalModifier = actor.system.skills.thievery.totalModifier;
-  const windowWidthPercent = windowWidthPercentForDiff(totalModifier - config.dc);
+  const thievery = actor.system.skills.thievery;
+  const windowWidthPercent = windowWidthPercentForDiff(thievery.totalModifier - config.dc);
+  const strainMs = strainMsForProficiencyRank(thievery.rank);
 
   const result = await LockPickingApp.run({
     actor,
     dc: config.dc,
     pinCount: config.pinCount,
     windowWidthPercent,
+    strainMs,
     mistakeThreshold: config.mistakeThreshold,
   });
 
@@ -91,6 +93,16 @@ async function onReset(actor, messageId) {
 function renderCard(message, element) {
   const config = message.getFlag(FLAG_SCOPE, 'lockPicking');
   if (!config) return;
+
+  // The DC is never shown to players — only rendered into this client's own DOM when the viewing
+  // user is a GM, never written into the message's stored (shared) content.
+  const gmDcEl = element.querySelector('[data-lock-picking-gm-dc]');
+  if (gmDcEl) {
+    gmDcEl.style.display = game.user.isGM ? '' : 'none';
+    gmDcEl.textContent = game.user.isGM
+      ? game.i18n.format('pf2e-customizations.lockPicking.card.gmOnlyDc', { dc: config.dc })
+      : '';
+  }
 
   const container = element.querySelector('[data-lock-picking-status]');
   if (!container) return;

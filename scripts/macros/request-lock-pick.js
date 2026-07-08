@@ -90,7 +90,7 @@ async function requestLockPick() {
             const tierLabel = game.i18n.localize(`pf2e-customizations.lockPicking.tier.${dcTierLabelForDc(dc)}`);
             const mistakeThreshold = game.settings.get('pf2e-customizations', 'lockPickingMistakeThreshold');
 
-            const cardContent = await renderTemplate(CHAT_CARD_TEMPLATE, { actorName: actor.name, tierLabel, dc });
+            const cardContent = await renderTemplate(CHAT_CARD_TEMPLATE, { actorName: actor.name, tierLabel });
 
             // ChatMessage documents have no `ownership` schema field, so players can never be granted
             // write access to a GM-authored message. This message's flags are write-once (set here,

@@ -8,7 +8,11 @@ A Foundry VTT module providing small Pathfinder 2e quality-of-life improvements.
 
 ## Features
 
-### Item Durability Fields
+### Item Durability
+
+Exposes the existing HP, Max HP, Broken Threshold, and Hardness fields on physical item sheets, plus two macros for working with them without needing to open the item sheet.
+
+#### Durability Fields (Item Sheet)
 
 Exposes the existing HP, Max HP, Broken Threshold, and Hardness fields on physical item sheets (Details tab). These fields exist in the PF2e data model for all physical items but have no UI outside of shields — this feature surfaces them consistently.
 
@@ -21,9 +25,7 @@ Exposes the existing HP, Max HP, Broken Threshold, and Hardness fields on physic
 
 Enable via **Game Settings > Module Settings > Item Durability Fields**.
 
----
-
-### Set Item Durability (Macro)
+#### Set Item Durability (Macro)
 
 A macro utility that lets any player edit the durability fields of an item in their inventory without opening the item sheet — useful mid-session when a weapon gets damaged or armor takes a hit.
 
@@ -46,9 +48,7 @@ pf2eCustomizations.setItemDurability();
 
 This macro is always available once the module is enabled — no additional setting required.
 
----
-
-### Apply Item Damage (Macro)
+#### Apply Item Damage (Macro)
 
 A GM-only macro that applies raw damage to an item, subtracting Hardness and reducing the item's current HP — without doing the math by hand.
 
@@ -76,7 +76,9 @@ This macro is always available once the module is enabled — no additional sett
 
 ### Lock Picking Minigame
 
-An interactive pin-tumbler puzzle that stands in for a flat Thievery check when a PC picks a lock. Pin count is derived from the lock's difficulty tier; each pin's forgiveness is derived from the acting character's live Thievery modifier vs. the lock's DC.
+An interactive pin-tumbler dial puzzle that stands in for a flat Thievery check, triggered by the GM for a specific PC and attempted by that PC's owning player.
+
+#### Request Lock Pick (Macro)
 
 **Setup:** Create a GM world macro (or hotbar macro) with this single line:
 
@@ -84,17 +86,28 @@ An interactive pin-tumbler puzzle that stands in for a flat Thievery check when 
 pf2eCustomizations.requestLockPick();
 ```
 
-**Usage:**
+**Usage (GM):**
 
-1. As the GM, run the macro.
+1. Run the macro.
 2. Pick the target **Character** (defaults to your controlled token if it's a player-owned PC) and the **Lock Difficulty** — Simple (DC 15), Average (DC 20), Good (DC 25), Superior (DC 30), or a Custom DC.
-3. Click **Send** — a chat card posts describing the lock and an **Attempt Lock** button.
-4. Any player who owns that character can click **Attempt Lock**. Only one player can attempt at a time — others see an "in progress" status until it resolves.
-5. The puzzle opens to a brief instructions screen first; clicking **Begin** generates the pins. Drag each pin's slider and watch the tension indicator to feel out the correct spot, then click **Set Pin**.
-6. A missed pin is a recoverable mistake (it resets and re-randomizes) — but reaching the mistake threshold ends the attempt as a **critical failure** (broken pick). Click **Give Up** at any time to bank a safe **failure** instead of risking that; a plain failure leaves the card attemptable again.
-7. Completing all pins succeeds (with a bonus "critical success" flavor if done with zero mistakes) and removes the button. A critical failure shows a GM-only **Reset** control once new tools are narratively acquired.
+3. Click **Send** — a chat card is posted publicly, naming the actor and lock tier. The DC itself is never shown to players; it's rendered GM-only, directly on the same card.
 
-Enable via **Game Settings > Module Settings > Lock Picking Minigame**. The mistake threshold (default 3) is a separate world setting.
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Lock (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Lock** on the chat card. Only one attempt can be in flight at a time — everyone else sees an "in progress" status until it resolves.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** generates the pins.
+3. Drag each pin's dial to rotate it. There's no visual meter — proximity is only *felt*: as the dial nears the correct spot it resists and shudders, with a strain sound cue. Ease off before it fights back too long, or the pin snaps back to the start and counts as a mistake.
+4. Once the dial turns freely, click **Set Pin**.
+5. Repeat for every pin. Reaching the mistake threshold (default 3) breaks the pick — a critical failure that locks out further attempts until new tools are acquired (the GM can reset this from the chat card). Finishing with zero mistakes is a critical success; finishing with at least one is a plain success.
+6. **Give Up** at any time to walk away with a plain failure instead of risking a broken pick — a plain failure leaves the card attemptable again.
+
+**Difficulty scaling:**
+- Pin count is derived from the lock's DC tier (Simple → 2 pins, Average → 3, Good → 4, Superior → 5).
+- Both the size of the correct window and the grace period before a mistake registers scale with the acting character's live Thievery total modifier and proficiency rank against the DC, read fresh when the puzzle opens — a more skilled character gets a more forgiving puzzle.
+
+Enable via **Game Settings > Module Settings > Lock Picking Minigame**.
 
 ---
 
@@ -114,13 +127,15 @@ Copy or clone this repository into your Foundry `Data/modules/` directory as `pf
 
 ## Configuration
 
-Each feature's toggle requires a world reload (`requiresReload: true`) when changed. Settings are world-scoped and only visible to the GM.
+Settings marked **World** are GM-only, under **Game Settings > Module Settings**. Settings marked **Client** are per-player and don't require a reload.
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Item Durability Fields | On | Show HP/hardness fields on physical item sheets |
-| Lock Picking Minigame | Off | Enable the interactive lock-picking puzzle |
-| Lock Picking Mistake Threshold | 3 | Mistakes allowed before a critical failure (no reload required) |
+| Setting | Scope | Default | Description |
+|---------|-------|---------|-------------|
+| Item Durability Fields | World (reload) | On | Show HP/hardness fields on physical item sheets |
+| Lock Picking Minigame | World (reload) | Off | Enable the interactive lock picking puzzle |
+| Lock Picking Mistake Threshold | World | 3 | Mistakes allowed before a lock picking attempt critically fails |
+| Skip Lock Picking Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Lock Picking: Show Sweet Spot (Debug) | Client | Off | Draws each pin's correct window on the dial, for testing/tuning only |
 
 ---
 

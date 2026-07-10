@@ -68,3 +68,93 @@ A continuous visual meter (fill bar graded by proximity, red→green) made the p
 8. The tick-grid approach (checking only the current value every `TICK_STEP` units) can miss a click tick during a very fast drag that jumps past the window entirely between two `input` events — acceptable for v1 since the mechanic rewards a slow, deliberate drag anyway.
 9. Pre-existing doc/code mismatch fixed alongside this feature: README's defaults table now matches `itemDurabilityEnabled`'s actual `true` default.
 10. **Known limitation**: the original slider-based interaction was keyboard-operable; the pointer-drag rotational dial that replaced it is not. Not solved for v1 — accepted trade-off, not gold-plated.
+
+## Phase 3: Chronological Timeline Puzzle
+
+### Flow
+
+1. GM runs `pf2eCustomizations.requestTimelinePuzzle()`. A Dialog lets them pick the target PC, an "Investigate Skill" (any of PF2e's 16 `CONFIG.PF2E.skills` plus Perception, which isn't a `skills` member and is added as a manual option), a raw Task Target DC (any number — see "DC handling" below), a Circumstantial Mod (signed, default 0), and an "Allow Critical Outcomes" checkbox (default on).
+2. On Send, the macro stores only these raw inputs (`actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes`) on the `ChatMessage`'s flags, write-once — see "Data model" below for the rationale (mirrors lock-picking: `ChatMessage` has no `ownership` schema field in v13, so the message's flags are write-once). **Unlike an earlier version of this feature, nothing derived is baked in here** — grid size, the sampled event subset/order, the starting shuffle, and the clue set are all generated fresh later, at attempt time (step 4), not at request time. This was a deliberate design change: baking them in here meant re-attempting the same request (including after cancelling) replayed the exact same puzzle every time, which read as "always the same events, same order" — regenerating on each attempt fixes that directly.
+3. Claim/outcome state lives on the **actor's** flags (`flags['pf2e-customizations'].timelinePuzzle.<messageId>`), exactly like lock-picking, for the same ownership reason. `Hooks.on('renderChatMessageHTML', ...)` + `Hooks.on('updateActor', ...)` keep the card in sync the same way.
+4. Clicking "Attempt Timeline" claims the attempt (same optimistic-lock pattern as lock-picking), THEN generates the grid size, event subset/order, starting shuffle, clue set, and `neededRoll`/`clueMode` fresh (`onAttempt` in `timeline-puzzle-chat.js`, using the actor's live stat), and opens `TimelinePuzzleApp` with that freshly-generated content.
+5. `TimelinePuzzleApp` opens to an **instructions** stage first (mirroring lock-picking exactly, including its own Handlebars-branch structure), unless the `timelinePuzzleHideInstructions` client setting is on, in which case it opens straight to a compact **ready** screen instead. Either way, clues, the event grid, and the countdown are **never** shown until the player explicitly clicks Begin/Start — even with instructions hidden, that click is still required, so the clock is never started automatically. A "?" help button is available on both the ready and active-puzzle screens, reusing the same instructions content as a mutually-exclusive Handlebars branch (`{{else if helpVisible}}`, same pattern as lock-picking) — never a CSS-toggled overlay sitting alongside the puzzle content, which was tried first and caused a real bug (the instructions text rendering twice, stacked, whenever the toggle class failed to apply). The clock keeps running in the background while help is open (the countdown element just isn't in the DOM to update, which `#tick()` already tolerates), so opening help never pauses it.
+6. The player reorders event cards — a horizontal row, not a vertical list — by native HTML5 drag-and-drop or ◀/▶ buttons, and can click "Check Order" any time — a wrong guess is a free, unpenalized visual flash; there is no mistake counter or threshold (unlike lock-picking).
+7. On a correct submission, the clock stops and the outcome is decided by how much of the time allowance was used. On expiration, the outcome is decided by how many blocks are in their correct index. Closing the window before either of those (titlebar X) resolves as `cancelled` and never writes `resolved` on the actor flag, matching lock-picking's fallback exactly.
+
+### DC handling
+
+DC is typically 15-40 but is a real PF2e check DC and can legitimately fall outside that band. The GM's entered DC is used **as-is** everywhere — grid-size lookup, `neededRoll`, and the GM-only display — and is never clamped. This works cleanly because the DC→grid-size table (below) is already open-ended at both extremes, so no special-casing is needed for a DC of, say, 10 or 45. Clamping was considered and rejected: it would have corrupted `neededRoll`'s odds calculation for any real check outside 15-40 (a DC 45 task the PC needs a natural 20-or-better for should compute that way, not as if it were DC 40).
+
+### DC → grid size
+
+Independent of the PC's stat — grid size (number of events) is derived from the DC alone:
+
+| DC | Events |
+|---|---|
+| ≤15 | 3 |
+| 16-25 | 4 |
+| 26-35 | 5 |
+| ≥36 | 6 |
+
+### Time allowance
+
+```
+totalPcStat = live skill totalModifier (actor.system.skills[slug].totalModifier, or
+              actor.system.perception.totalModifier for Perception) + stored circumstanceMod
+baseTimeAllowanceSeconds = totalPcStat * 4 + 30
+```
+
+Read **live** when the puzzle opens (not snapshotted at request time) — buffs/penalties active at attempt time apply.
+
+**Retuned once already**: the original constants were `*10 + 60` (matching the user-provided spec's own worked example, DC25/totalPcStat 6 → 120s). Playtesting found this too generous — an untrained (+0) character got a full minute for what's meant to be an easy puzzle, and a high-stat character could sail well past 2 minutes. Retuned to `*4 + 30`: untrained now gets 30s, and even a +20 stat (a genuinely high-op case) stays under ~2 minutes. Both constants live in `TIMELINE_PUZZLE_CONFIG` (`TIME_ALLOWANCE_PER_STAT_POINT`/`TIME_ALLOWANCE_BASE_SECONDS`) — a one-line change each if further retuning is needed.
+
+### Clue completeness → the PC's odds, not the DC tier
+
+This is a second, independent difficulty axis from grid size, based on how likely the PC is to succeed on the underlying roll:
+
+```
+neededRoll = clamp(dc - totalPcStat, 1, 20)   // minimum d20 result that would meet/beat the DC
+clueMode = neededRoll <= 10 ? 'full' : 'reduced'
+```
+
+`neededRoll`/`clueMode`, like everything else in this section, are computed live at attempt time (not fixed at message creation) — this changed from an earlier version of the feature that fixed them at request time; see "Data model" below for why. **The GM-only chat card line does not show `clueMode` at all** — an earlier version showed a "live preview" of it there, but that phrase reads as unclear/alarming out of context (the GM can't tell from the wording alone that it's just a same-client estimate, not something exposed to players), and duplicating clueMode into the card added a second thing that could get out of sync with the actual attempt for no real benefit. The line now matches lock-picking's exactly: just `Task DC {dc}`, hidden from players the same way (`display:none` set in JS when `!game.user.isGM`, never written into the message's shared content — same soft-hiding caveat as lock-picking's own DC line, inspectable via devtools but absent from the normal UI).
+
+Clue generation (`generateClueDescriptors` in `timeline-puzzle-logic.js`): for a true order of N events, there are N-1 "slots" (slot *i* = "order[i] immediately precedes order[i+1]"). The two boundary slots (touching the true first/last event) phrase as direct anchor clues ("X happens first" / "X happens last"); interior slots phrase as "X happens immediately before Y".
+- `clueMode: 'full'` reveals all N-1 slots — this fully chain-determines the unique solution, no guessing required.
+- `clueMode: 'reduced'` drops exactly one random slot (boundary or interior, no distinction) entirely, leaving exactly N-2 clues and one genuine gap. The player resolves it by trial — cheap, since a wrong Check Order costs nothing.
+
+An earlier draft of this algorithm tried to *substitute* a weaker clue when a boundary slot was dropped (to avoid ever stating something false), but that kept the total at N-1 in the boundary case instead of N-2, contradicting the "reduced = N-2" requirement. Plain omission (any slot, no substitution) is simpler and always correct.
+
+Edge case: at `eventCount === 3`, both slots are boundary slots — a 3-event full-mode puzzle has only "first"/"last" anchor clues, never "X before Y" phrasing. Accepted: the third event is fully determined by elimination.
+
+### Data model
+
+**ChatMessage flag** (`flags['pf2e-customizations'].timelinePuzzle`, write-once): `{ actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes }` — just the GM's raw inputs, nothing derived. **This changed from an earlier version**, which also baked in `eventCount, solutionOrder, displayOrder, neededRoll, clueMode, clues` at request time (mirroring lock-picking's fixed-at-creation `pinCount`). That made sense for lock-picking, where the "lock" is a specific object in the fiction that shouldn't change between attempts — but the timeline puzzle's events are context-free/abstract with no such continuity requirement, and fixing them per-message meant re-attempting the same request (including after cancelling) always replayed the identical puzzle. Moved to generating everything fresh in `onAttempt()` instead (see "Flow" and "Time allowance"/"Clue completeness" above) — every attempt is now a genuinely new puzzle, whether it's a brand new GM request or a re-attempt of an existing one.
+
+`solutionOrder`/`displayOrder` (now transient, held only in `TimelinePuzzleApp`'s private state, never stored on the message) are arrays of event-bank entries — see `EVENT_BANK_IDS` in `timeline-puzzle-logic.js`. `clues` (also transient) is the array of structured clue descriptors generated once per attempt and passed into the app; regenerating per attempt (rather than per chat-render) matters because chat cards redraw often — e.g. via the `updateActor` hook — and re-rolling on every redraw would silently change the puzzle underneath a player mid-attempt. Generation happens exactly once, in `onAttempt()`, before `TimelinePuzzleApp.run()` is called, and stays fixed for the lifetime of that one attempt.
+
+**`EVENT_BANK_IDS` content model changed**: originally a small (14-entry) pool of abstract, flavor-neutral, localized placeholders ("Event Alpha", "Event Beta", ...), matching lock-picking's zero-narrative-content precedent. Replaced with a GM-authored, fantasy-themed pool of ~100 full display-text entries (e.g. `'The Shattering of the Moon'`). Each entry now serves as **both** the internal identifier and the displayed card text directly — there is no localization indirection for these anymore (`#eventLabel` was removed from `TimelinePuzzleApp`; card labels are the raw array entries). This is a deliberate trade-off: GM-authored campaign flavor text doesn't need per-locale translation the way the module's own fixed UI copy does, and routing it through `game.i18n.localize('...event.<entry>')` would require hand-maintaining a matching translation-key entry for every single item — the exact mismatch that caused entries to render as raw untranslated keys when the pool was first swapped in. Two invariants this content model depends on: every entry must be **unique** (duplicates would make two cards indistinguishable and could confuse position-based comparisons), and the pool must have **at least 6 entries** (to cover the Expert grid-size tier).
+
+**Actor flag** (`flags['pf2e-customizations'].timelinePuzzle.<messageId>`, mutable): `{ claimedBy, resolved }` where `resolved` is `null` or one of `'criticalSuccess' | 'success' | 'failure' | 'criticalFailure'` — same shape as lock-picking.
+
+### Outcomes
+
+- Correct submission within the first 25% of `baseTimeAllowanceSeconds` elapsed → **criticalSuccess**.
+- Correct submission any time after that (but before expiration) → **success**.
+- Timer expires with ≥1 event block in its correct index → **failure**.
+- Timer expires with 0 correct → **criticalFailure**.
+- If the GM unchecked "Allow Critical Outcomes" at request time: criticalSuccess collapses to success, criticalFailure collapses to failure.
+- No mistake-penalty or lockout mechanic: unlike lock-picking's mistake-threshold → broken-pick → GM Reset flow, a wrong Check Order is free and unlimited, and **all four resolved outcomes stay freely re-attemptable** via a fresh GM request — there is no GM Reset control for this feature.
+
+### Open implementation questions
+
+1. Clue-drop algorithm simplified to plain random omission (see "Clue completeness" above) rather than a considered substitute-a-weaker-clue approach, after the substitution version was found to keep the wrong total clue count in the boundary-drop case.
+2. GM-only card line shows both `dc` and `clueMode` (full/reduced) — purely additive over lock-picking's DC-only precedent, since clue mode is useful tuning feedback the GM otherwise can't see. Trim if unwanted.
+3. Skill dropdown is sorted alphabetically by localized label (16 `CONFIG.PF2E.skills` entries plus a manually-added Perception option) rather than appending Perception at the end.
+4. No lockout/reset flow on `criticalFailure` — see "Outcomes" above. Flag for reconsideration if playtesting shows a lockout is actually wanted.
+5. First use of native HTML5 drag-and-drop in this codebase (dragstart/dragover/drop) — lock-picking's pointer-drag dial is a different, non-reusable interaction model. Reorders always go through both drag-and-drop and ◀/▶ buttons (`moveLeft`/`moveRight` — the grid is a horizontal row of cards, not a vertical stack), keeping a single `#displayOrder` array as the source of truth; the DOM is patched directly (existing block nodes re-appended in the new order) rather than triggering a full ApplicationV2 re-render, to avoid disrupting the running timer or in-progress drag state — same rationale lock-picking used for updating its dial transform directly via DOM. Each card also shows a live 1-based position badge, updated in the same DOM pass as the button disabled-states. Firefox requires `dataTransfer.setData(...)` to be called during `dragstart` or the drag never initiates at all; the id itself is read back from a private field, not from the transfer payload, but `setData` still has to be called for the drag to start.
+6. Instructions gate: `TimelinePuzzleApp` has a `#stage` ('instructions'/'puzzle') exactly like lock-picking, controlled by the `timelinePuzzleHideInstructions` client setting — but unlike lock-picking, hiding the instructions text does **not** skip straight into an already-running puzzle. A second gate, `#started`, is independent of `#stage` and always starts `false`; clues/grid/countdown are absent from the rendered DOM (not just CSS-hidden) until a single `begin` action (shared by both the instructions screen's "Begin" button and the compact ready-screen's "Start" button) sets `#started = true` and re-renders. This guarantees the countdown never starts without an explicit player click, regardless of the instructions-hidden setting.
+7. **Fixed bug**: the help button initially reused the instructions content as an always-in-DOM overlay toggled purely by a CSS `.is-visible` class (to dodge a full re-render). If that class ever failed to apply, the overlay rendered as an ordinary block element stacked below the real stage content instead of hidden — showing the instructions text twice, breaking the puzzle's layout, and making the grid unusable. Replaced with a proper `{{else if helpVisible}}` Handlebars branch, exactly mirroring lock-picking's proven approach: instructions/help/puzzle-content are now mutually exclusive by construction, not by a CSS toggle that can silently fail. A full re-render on help toggle is safe here because the timer-start logic keys off `#startTimestamp === null`, not off "is this the first render," so it never restarts the clock or loses `#displayOrder`/clue state.
+8. **Fixed bug**: the `moveUp`/`moveDown` buttons carry `data-event-id` (so their click handler can read which event they belong to), but `#wireDragAndDrop`/`#renderGrid`/`#updateMoveButtonStates` all originally queried the grid with the bare attribute selector `[data-event-id]` — which matched those buttons in addition to their parent `.timeline-event-block` `<li>`. On the very first reorder, `#renderGrid()`'s node-by-id map got polluted by the buttons (competing for the same key as their parent), and `appendChild`-ing them ripped them out of their `<li>` and re-parented them as direct siblings in the grid — corrupting the DOM, breaking further clicks, and looking "mixed up" exactly as reported. Fixed by scoping all three call sites to the `.timeline-event-block` class selector, which only the actual blocks carry.
+9. The instructions screen originally had a Cancel button (mirroring lock-picking's `cancelInstructions` action) but was removed — the "don't show this again" checkbox already covers the only real reason to back out at that stage, and the titlebar close button still resolves as `cancelled` via the existing `_onClose` fallback, so a dedicated in-content Cancel was redundant.
+10. **Superseded**: event bank size was originally 14 entries (see "Data model" above for the switch to a ~100-entry GM-authored fantasy pool, which also resolves the repetition concern this item originally flagged).

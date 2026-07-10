@@ -49,4 +49,24 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'timelinePuzzleEnabled', {
+    name: 'pf2e-customizations.settings.timelinePuzzle.name',
+    hint: 'pf2e-customizations.settings.timelinePuzzle.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'timelinePuzzleHideInstructions', {
+    name: 'pf2e-customizations.settings.timelinePuzzleHideInstructions.name',
+    hint: 'pf2e-customizations.settings.timelinePuzzleHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
 }

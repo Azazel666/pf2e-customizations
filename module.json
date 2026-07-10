@@ -30,7 +30,8 @@
   ],
   "styles": [
     "styles/features/item-durability.css",
-    "styles/features/lock-picking.css"
+    "styles/features/lock-picking.css",
+    "styles/features/timeline-puzzle.css"
   ],
   "languages": [
     {

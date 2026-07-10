@@ -75,5 +75,57 @@
   "pf2e-customizations.lockPicking.card.success": "Låset är upplåst!",
   "pf2e-customizations.lockPicking.card.failure": "Ingen tur den här gången. Försök gärna igen.",
   "pf2e-customizations.lockPicking.card.criticalFailure": "Dyrkverktyget går sönder! Låset motstår vidare försök tills nya verktyg används.",
-  "pf2e-customizations.lockPicking.card.reset": "Återställ (nya verktyg)"
+  "pf2e-customizations.lockPicking.card.reset": "Återställ (nya verktyg)",
+
+  "pf2e-customizations.settings.timelinePuzzle.name": "Tidslinjepusselminispel",
+  "pf2e-customizations.settings.timelinePuzzle.hint": "Aktivera det interaktiva kronologi-pusslet, som SL startar via makrot Begär tidslinjepussel.",
+  "pf2e-customizations.settings.timelinePuzzleHideInstructions.name": "Hoppa över instruktioner för tidslinjepussel",
+  "pf2e-customizations.settings.timelinePuzzleHideInstructions.hint": "Visa inte hur-man-spelar-skärmen före varje tidslinjepusselförsök. Du kan fortfarande öppna den via (?)-knappen på pusslet. Detta påverkar bara din egen klient.",
+
+  "pf2e-customizations.macro.requestTimelinePuzzle.title": "Begär tidslinjepussel",
+  "pf2e-customizations.macro.requestTimelinePuzzle.actor": "Karaktär",
+  "pf2e-customizations.macro.requestTimelinePuzzle.skill": "Undersökningsfärdighet",
+  "pf2e-customizations.macro.requestTimelinePuzzle.dc": "Uppgiftens svårighetsgrad",
+  "pf2e-customizations.macro.requestTimelinePuzzle.circumstanceMod": "Omständighetsmodifierare",
+  "pf2e-customizations.macro.requestTimelinePuzzle.allowCriticalOutcomes": "Tillåt kritiska utfall",
+  "pf2e-customizations.macro.requestTimelinePuzzle.send": "Skicka",
+  "pf2e-customizations.macro.requestTimelinePuzzle.cancel": "Avbryt",
+  "pf2e-customizations.macro.requestTimelinePuzzle.gmOnly": "Endast SL kan begära ett tidslinjepusselförsök.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.noActors": "Inga spelarägda karaktärer hittades.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.disabled": "Inställningen Tidslinjepusselminispel är inaktiverad. Aktivera den under Modulinställningar och ladda om världen först.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.invalidDc": "Ange en giltig svårighetsgrad och omständighetsmodifierare.",
+
+  "pf2e-customizations.timelinePuzzle.appTitle": "Sortera tidslinjen",
+  "pf2e-customizations.timelinePuzzle.helpButton": "Hur man spelar",
+  "pf2e-customizations.timelinePuzzle.closeHelp": "Tillbaka till pusslet",
+  "pf2e-customizations.timelinePuzzle.instructionsTitle": "Så här sorterar du tidslinjen",
+  "pf2e-customizations.timelinePuzzle.instructionsBody": "När du startar ser du ledtrådar om händelsernas verkliga ordning. Dra händelseblocken (eller använd pilknapparna) för att placera dem i kronologisk ordning, med ledtrådarna som vägledning. Klicka på Kontrollera ordning när som helst för att testa din nuvarande placering — en felaktig gissning kostar inget, så testa fritt. Klockan startar i samma stund du klickar på Börja, så se till att du är redo först; ju snabbare du löser det, desto bättre utfall.",
+  "pf2e-customizations.timelinePuzzle.eventCountLabel": "Händelser",
+  "pf2e-customizations.timelinePuzzle.dontShowAgain": "Visa inte detta igen",
+  "pf2e-customizations.timelinePuzzle.begin": "Börja",
+  "pf2e-customizations.timelinePuzzle.readyBody": "Redo när du är det — ledtrådar och timer startar båda i samma stund du klickar på Starta.",
+  "pf2e-customizations.timelinePuzzle.start": "Starta",
+  "pf2e-customizations.timelinePuzzle.timeRemainingLabel": "Återstående tid",
+  "pf2e-customizations.timelinePuzzle.cluesLabel": "Ledtrådar",
+  "pf2e-customizations.timelinePuzzle.checkOrder": "Kontrollera ordning",
+  "pf2e-customizations.timelinePuzzle.moveLeft": "Flytta vänster",
+  "pf2e-customizations.timelinePuzzle.moveRight": "Flytta höger",
+
+  "pf2e-customizations.timelinePuzzle.clue.first": "{event} sker först.",
+  "pf2e-customizations.timelinePuzzle.clue.last": "{event} sker sist.",
+  "pf2e-customizations.timelinePuzzle.clue.adjacent": "{before} sker omedelbart före {after}.",
+
+  "pf2e-customizations.timelinePuzzle.skill.perception": "Perception",
+
+
+  "pf2e-customizations.timelinePuzzle.card.request": "{actor} undersöker med {skill}.",
+  "pf2e-customizations.timelinePuzzle.card.gmOnlyDc": "Uppgiftens SG {dc}",
+  "pf2e-customizations.timelinePuzzle.card.attempt": "Försök med tidslinjen",
+  "pf2e-customizations.timelinePuzzle.card.inProgress": "Pågår, {name} försöker...",
+  "pf2e-customizations.timelinePuzzle.card.inProgressSelf": "Du försöker med denna tidslinje...",
+  "pf2e-customizations.timelinePuzzle.card.alreadyClaimed": "Någon annan försöker redan med denna tidslinje.",
+  "pf2e-customizations.timelinePuzzle.card.criticalSuccess": "Löst snabbt och korrekt — en kritisk framgång!",
+  "pf2e-customizations.timelinePuzzle.card.success": "Löst korrekt!",
+  "pf2e-customizations.timelinePuzzle.card.failure": "Tiden tog slut med ordningen fortfarande fel. Försök gärna igen.",
+  "pf2e-customizations.timelinePuzzle.card.criticalFailure": "Tiden tog slut utan att något var på rätt plats — ett kritiskt misslyckande."
 }

@@ -1,0 +1,252 @@
+.timeline-puzzle-app {
+  padding: 8px;
+}
+
+.timeline-puzzle-instructions p {
+  margin: 0 0 8px;
+}
+
+.timeline-puzzle-event-count-label {
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.timeline-puzzle-dont-show-again {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.timeline-puzzle-ready p {
+  margin: 0 0 8px;
+}
+
+.timeline-puzzle-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-puzzle-header {
+  font-weight: bold;
+  margin: 0 0 4px;
+}
+
+.timeline-puzzle-help-button {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.timeline-puzzle-countdown-label,
+.timeline-puzzle-clues-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+  margin: 0;
+  text-align: center;
+}
+
+.timeline-puzzle-clues-label {
+  text-align: left;
+}
+
+.timeline-puzzle-countdown {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin: 2px 0 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-puzzle-clues {
+  margin: 0 0 10px;
+  padding-left: 18px;
+}
+
+.timeline-puzzle-clues li {
+  margin: 0 0 4px;
+}
+
+.timeline-puzzle-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch;
+  gap: 16px;
+  margin: 0 0 10px;
+  padding: 8px 4px 16px;
+  list-style: none;
+  overflow-x: auto;
+}
+
+/* Foundry's own base CSS styles bare `button` elements fairly aggressively (block layout,
+   width:100%, etc.) with selectors that can out-specificity a single module class — every
+   structural property below is forced with !important so the card layout can't be silently
+   overridden by that, rather than relying on selector specificity alone. */
+.timeline-event-block {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 136px !important;
+  width: 136px !important;
+  min-height: 168px !important;
+  padding: 16px 28px !important;
+  box-sizing: border-box !important;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #4b5563, #2b3341);
+  border: 2px solid #1f2937;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  text-align: center;
+}
+
+.timeline-event-block:active {
+  cursor: grabbing;
+}
+
+.timeline-event-block.is-drag-over {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5), 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.timeline-event-index {
+  position: absolute !important;
+  top: 8px !important;
+  left: 8px !important;
+  right: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 50%;
+  background: rgba(31, 41, 55, 0.85);
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.timeline-event-label {
+  position: static !important;
+  width: auto !important;
+  margin: 0 !important;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Discreet edge controls, not a button row: half-faded until the card (or the button itself) is
+   hovered/focused, so the card reads as a card first and a control second. */
+.timeline-event-move-button {
+  position: absolute !important;
+  top: 50% !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1;
+  border-radius: 50%;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+}
+
+.timeline-event-block:hover .timeline-event-move-button {
+  opacity: 0.85;
+}
+
+.timeline-event-move-button:hover,
+.timeline-event-move-button:focus-visible {
+  opacity: 1;
+}
+
+.timeline-event-move-button:disabled {
+  opacity: 0.12 !important;
+  cursor: default;
+}
+
+.timeline-event-move-button.is-left {
+  left: 4px !important;
+  right: auto !important;
+}
+
+.timeline-event-move-button.is-right {
+  right: 4px !important;
+  left: auto !important;
+}
+
+.timeline-puzzle-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.timeline-puzzle-app.is-locked .timeline-event-block,
+.timeline-puzzle-app.is-locked .timeline-puzzle-actions button {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Non-blocking feedback for a wrong Check Order submission — no penalty, just a visual nudge. */
+.timeline-puzzle-app.is-glitch .timeline-puzzle-grid {
+  animation: timeline-puzzle-glitch-flash 0.4s ease-out;
+}
+
+@keyframes timeline-puzzle-glitch-flash {
+  0% { filter: none; }
+  30% { filter: hue-rotate(15deg) contrast(1.3); }
+  60% { filter: hue-rotate(-10deg) contrast(1.1); }
+  100% { filter: none; }
+}
+
+.timeline-puzzle-card-gm-dc {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 2px 0 4px;
+}
+
+.timeline-puzzle-card-status {
+  margin-top: 4px;
+}
+
+.timeline-puzzle-card-outcome {
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+.timeline-puzzle-card-outcome.is-success {
+  color: #16a34a;
+}
+
+.timeline-puzzle-card-outcome.is-failure {
+  color: #b91c1c;
+}
+
+.timeline-puzzle-card-status-text {
+  font-style: italic;
+  margin: 4px 0;
+}

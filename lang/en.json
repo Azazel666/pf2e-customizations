@@ -75,5 +75,57 @@
   "pf2e-customizations.lockPicking.card.success": "Lock picked!",
   "pf2e-customizations.lockPicking.card.failure": "No luck this time. Feel free to try again.",
   "pf2e-customizations.lockPicking.card.criticalFailure": "The pick snaps! This lock resists further attempts until new tools are used.",
-  "pf2e-customizations.lockPicking.card.reset": "Reset (new tools)"
+  "pf2e-customizations.lockPicking.card.reset": "Reset (new tools)",
+
+  "pf2e-customizations.settings.timelinePuzzle.name": "Timeline Puzzle Minigame",
+  "pf2e-customizations.settings.timelinePuzzle.hint": "Enable the interactive chronological-order puzzle, triggered by the GM via the Request Timeline Puzzle macro.",
+  "pf2e-customizations.settings.timelinePuzzleHideInstructions.name": "Skip Timeline Puzzle Instructions",
+  "pf2e-customizations.settings.timelinePuzzleHideInstructions.hint": "Don't show the how-to-play screen before each timeline puzzle attempt. You can still open it from the (?) button on the puzzle. This only affects your own client.",
+
+  "pf2e-customizations.macro.requestTimelinePuzzle.title": "Request Timeline Puzzle",
+  "pf2e-customizations.macro.requestTimelinePuzzle.actor": "Character",
+  "pf2e-customizations.macro.requestTimelinePuzzle.skill": "Investigate Skill",
+  "pf2e-customizations.macro.requestTimelinePuzzle.dc": "Task Target DC",
+  "pf2e-customizations.macro.requestTimelinePuzzle.circumstanceMod": "Circumstantial Mod",
+  "pf2e-customizations.macro.requestTimelinePuzzle.allowCriticalOutcomes": "Allow Critical Outcomes",
+  "pf2e-customizations.macro.requestTimelinePuzzle.send": "Send",
+  "pf2e-customizations.macro.requestTimelinePuzzle.cancel": "Cancel",
+  "pf2e-customizations.macro.requestTimelinePuzzle.gmOnly": "Only the GM can request a timeline puzzle attempt.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.noActors": "No player-owned characters found.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.disabled": "The Timeline Puzzle Minigame setting is disabled. Enable it in Module Settings and reload the world first.",
+  "pf2e-customizations.macro.requestTimelinePuzzle.invalidDc": "Enter a valid target DC and circumstance modifier.",
+
+  "pf2e-customizations.timelinePuzzle.appTitle": "Sort the Timeline",
+  "pf2e-customizations.timelinePuzzle.helpButton": "How to play",
+  "pf2e-customizations.timelinePuzzle.closeHelp": "Back to Puzzle",
+  "pf2e-customizations.timelinePuzzle.instructionsTitle": "How to Sort This Timeline",
+  "pf2e-customizations.timelinePuzzle.instructionsBody": "Once you start, you'll see clues about the true order of a set of events. Drag the event blocks (or use the arrow buttons) to put them in chronological order, using the clues as your guide. Click Check Order any time to test your current arrangement — a wrong guess costs nothing, so try freely. The clock starts the moment you click Begin, so make sure you're ready first; the faster you solve it, the better the outcome.",
+  "pf2e-customizations.timelinePuzzle.eventCountLabel": "Events",
+  "pf2e-customizations.timelinePuzzle.dontShowAgain": "Don't show this again",
+  "pf2e-customizations.timelinePuzzle.begin": "Begin",
+  "pf2e-customizations.timelinePuzzle.readyBody": "Ready when you are — clues and the timer both start the moment you click Start.",
+  "pf2e-customizations.timelinePuzzle.start": "Start",
+  "pf2e-customizations.timelinePuzzle.timeRemainingLabel": "Time Remaining",
+  "pf2e-customizations.timelinePuzzle.cluesLabel": "Clues",
+  "pf2e-customizations.timelinePuzzle.checkOrder": "Check Order",
+  "pf2e-customizations.timelinePuzzle.moveLeft": "Move left",
+  "pf2e-customizations.timelinePuzzle.moveRight": "Move right",
+
+  "pf2e-customizations.timelinePuzzle.clue.first": "{event} happens first.",
+  "pf2e-customizations.timelinePuzzle.clue.last": "{event} happens last.",
+  "pf2e-customizations.timelinePuzzle.clue.adjacent": "{before} happens immediately before {after}.",
+
+  "pf2e-customizations.timelinePuzzle.skill.perception": "Perception",
+
+
+  "pf2e-customizations.timelinePuzzle.card.request": "{actor} is investigating using {skill}.",
+  "pf2e-customizations.timelinePuzzle.card.gmOnlyDc": "Task DC {dc}",
+  "pf2e-customizations.timelinePuzzle.card.attempt": "Attempt Timeline",
+  "pf2e-customizations.timelinePuzzle.card.inProgress": "In progress by {name}...",
+  "pf2e-customizations.timelinePuzzle.card.inProgressSelf": "You are attempting this timeline...",
+  "pf2e-customizations.timelinePuzzle.card.alreadyClaimed": "Someone else is already attempting this timeline.",
+  "pf2e-customizations.timelinePuzzle.card.criticalSuccess": "Solved quickly and correctly — a critical success!",
+  "pf2e-customizations.timelinePuzzle.card.success": "Solved correctly!",
+  "pf2e-customizations.timelinePuzzle.card.failure": "Time ran out with the sequence still wrong. Feel free to try again.",
+  "pf2e-customizations.timelinePuzzle.card.criticalFailure": "Time ran out with nothing in its correct place — a critical failure."
 }

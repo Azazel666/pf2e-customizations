@@ -1,0 +1,14 @@
+# CLAUDE.md
+
+Guidance specific to the alibi-matrix feature (see the root `CLAUDE.md` for repo-wide conventions).
+
+## Phase 4: The Alibi Matrix
+
+A full logic-grid deduction puzzle ("Zebra puzzle" style) that stands in for a flat investigation/social skill check. The GM sends a request into chat for a specific PC, DC, skill, and circumstance modifier (`pf2eCustomizations.requestAlibiMatrix()`); any owning player can open the puzzle from the chat card (one attempt in flight at a time). Matrix dimensions (2 vs. 3 categories, 3x3 vs. 4x4) are derived from the DC alone; clue completeness is derived from the PC's live odds of success on the check, a separate axis — same two-axis philosophy as the timeline puzzle.
+
+- **Target files**: `scripts/features/alibi-matrix/` (`alibi-matrix-logic.js`, `alibi-matrix-app.js` + `.hbs`, `alibi-matrix-chat.js` + `-chat-card.hbs`), `scripts/macros/request-alibi-matrix.js`
+- **Third `ApplicationV2` + `HandlebarsApplicationMixin` feature**, built directly on the timeline puzzle's *final* (already-debugged) architecture rather than its original one: nothing randomized is baked into the `ChatMessage` at request time — the solution, grids, and clues are generated fresh every attempt (`generateAttempt()` in `onAttempt()`), and CSS uses `!important` on every structural property from the first draft, with grid cells as plain `<div data-action>` elements rather than `<button>`, to sidestep the class of bug the timeline puzzle hit with its move buttons.
+- **New interaction pattern**: tri-state grid cells (blank → ✗ → ✓, cycling on click) across 1 grid (2-category puzzles) or 3 side-by-side grids (3-category puzzles: Suspect×Room, Suspect×Motive, Room×Motive) — no drag-and-drop or reordering, unlike the timeline puzzle. The puzzle window's width varies per attempt (via an instance-level `position` constructor option) depending on how many grids are shown.
+- **Trigger**: same pattern as the other two features — `Hooks.on('renderChatMessageHTML', ...)` renders/gates an "Attempt Matrix" button based on `flags['pf2e-customizations'].alibiMatrix` (claim/resolution state on the actor, immutable raw GM inputs on the message).
+
+See `design.md` for the DC→dimensions and odds→clue-completeness formulas, the solution/grid-derivation math (including the Room×Motive transitive-derivation proof), the clue-generation algorithm, outcome tiers, and open implementation questions.

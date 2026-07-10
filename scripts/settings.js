@@ -69,4 +69,24 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'alibiMatrixEnabled', {
+    name: 'pf2e-customizations.settings.alibiMatrix.name',
+    hint: 'pf2e-customizations.settings.alibiMatrix.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'alibiMatrixHideInstructions', {
+    name: 'pf2e-customizations.settings.alibiMatrixHideInstructions.name',
+    hint: 'pf2e-customizations.settings.alibiMatrixHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
 }

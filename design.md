@@ -158,3 +158,103 @@ Edge case: at `eventCount === 3`, both slots are boundary slots — a 3-event fu
 8. **Fixed bug**: the `moveUp`/`moveDown` buttons carry `data-event-id` (so their click handler can read which event they belong to), but `#wireDragAndDrop`/`#renderGrid`/`#updateMoveButtonStates` all originally queried the grid with the bare attribute selector `[data-event-id]` — which matched those buttons in addition to their parent `.timeline-event-block` `<li>`. On the very first reorder, `#renderGrid()`'s node-by-id map got polluted by the buttons (competing for the same key as their parent), and `appendChild`-ing them ripped them out of their `<li>` and re-parented them as direct siblings in the grid — corrupting the DOM, breaking further clicks, and looking "mixed up" exactly as reported. Fixed by scoping all three call sites to the `.timeline-event-block` class selector, which only the actual blocks carry.
 9. The instructions screen originally had a Cancel button (mirroring lock-picking's `cancelInstructions` action) but was removed — the "don't show this again" checkbox already covers the only real reason to back out at that stage, and the titlebar close button still resolves as `cancelled` via the existing `_onClose` fallback, so a dedicated in-content Cancel was redundant.
 10. **Superseded**: event bank size was originally 14 entries (see "Data model" above for the switch to a ~100-entry GM-authored fantasy pool, which also resolves the repetition concern this item originally flagged).
+
+## Phase 4: The Alibi Matrix
+
+A full logic-grid deduction puzzle ("Zebra puzzle" style), the third investigation minigame alongside lock-picking and the timeline puzzle. Built directly on the timeline puzzle's **final** (already-debugged) architecture rather than its original one — see "Architecture lessons applied from the start" below.
+
+### Flow
+
+1. GM runs `pf2eCustomizations.requestAlibiMatrix()`. Same Dialog shape as the timeline puzzle: target PC, "Investigate Skill" (16 `CONFIG.PF2E.skills` + manually-added Perception), a raw Task Target DC (never clamped — see "DC handling"), a Circumstantial Mod (signed, default 0), an "Allow Critical Outcomes" checkbox (default on).
+2. On Send, the macro stores **only the GM's raw inputs** (`actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes`) on the `ChatMessage`'s flags, write-once. Nothing derived — matrix dimensions, the suspect/room/motive selection, the solution permutations, and every clue — is generated at request time at all.
+3. Claim/outcome state lives on the **actor's** flags (`flags['pf2e-customizations'].alibiMatrix.<messageId>`), same rationale and shape as the other two features.
+4. Clicking "Attempt Matrix" claims the attempt (same optimistic-lock pattern), THEN calls `generateAttempt()` fresh (in `onAttempt()`, using the actor's live stat at that moment) to produce the matrix dimensions, solution, grids, and clues, and opens `AlibiMatrixApp` with that freshly-generated content. Re-attempting the same request — including after cancelling — always gets a genuinely new matrix.
+5. Same instructions/ready/help/started gate as the timeline puzzle: `#stage` controls the full instructions text (skippable via `alibiMatrixHideInstructions` client setting), `#started` is independent and always starts `false`, and a single `begin` action (shared by the instructions screen's Begin and the compact ready-screen's Start) is the only thing that reveals clues/grids and starts the clock. No Cancel button on the instructions screen (same reasoning as timeline's — the checkbox + titlebar close cover it).
+6. The player clicks grid cells to cycle blank → ✗ (impossible) → ✓ (true) → blank, and can click "Check Matrix" any time — a wrong submission is a free, unpenalized visual flash; no mistake counter, no lockout.
+7. On a correct submission (all grids simultaneously fully and correctly filled), the clock stops and the outcome is decided by elapsed-time percentage. On expiration, the outcome is decided by how many whole grids ended up fully correct. Closing the window before either (titlebar X) resolves as `cancelled` and never writes `resolved`.
+
+### Architecture lessons applied from the start
+
+Two things the timeline puzzle only arrived at after real bugs are built into this feature from the first draft, not retrofitted:
+- **Nothing randomized is baked into the `ChatMessage`.** Timeline originally fixed its solution/clues at request time, which meant re-attempting the same request replayed an identical puzzle — a real complaint that took an architecture change to fix. Alibi Matrix generates everything fresh in `onAttempt()` from day one.
+- **CSS uses `!important` on every structural property from the first draft**, and grid cells are plain `<div data-action="cycleCell">` elements, not `<button>` — timeline's move-buttons lost their positioning to (most likely) Foundry's own aggressive base `<button>` styling, and `<div>` sidesteps that class of bug entirely. Foundry's `actions` dispatch framework works on any element carrying `data-action`, not just buttons.
+
+### DC handling
+
+Same principle as the other two features: DC used exactly as entered, never clamped — the DC→dimensions table is open-ended at both extremes.
+
+### DC → matrix dimensions
+
+| DC | Tier | Categories | Items/category | Grids shown |
+|---|---|---|---|---|
+| ≤15 | Easy | 2 (Suspect, Room) | 3 | 1 (Suspect×Room) |
+| 16-25 | Medium | 2 (Suspect, Room) | 4 | 1 (Suspect×Room) |
+| 26-35 | Hard | 3 (+ Motive) | 3 | 3 (Suspect×Room, Suspect×Motive, Room×Motive) |
+| ≥36 | Expert | 3 (+ Motive) | 4 | 3 |
+
+Three GM-editable content banks (`SUSPECT_BANK`, `ROOM_BANK`, `MOTIVE_BANK` in `alibi-matrix-logic.js`, 12 entries each by default) — each entry used directly, verbatim, as both identifier and displayed text, no localization indirection (the exact lesson learned from timeline's event-bank bug). Each bank needs ≥4 unique entries to cover Expert tier; enforced by convention/comment only, not a runtime check — a GM who trims a bank below 4 entries during Expert-tier play would hit a silent `undefined` from `slice(0, n)`.
+
+### Time allowance
+
+```
+totalPcStat = live skill totalModifier (or actor.system.perception.totalModifier for Perception)
+              + stored circumstanceMod
+baseTimeAllowanceSeconds = totalPcStat * 7 + 50
+```
+
+Read **live** in `onAttempt()`, same philosophy as the other two features. Tuned as a "moderate middle ground": more generous than the timeline puzzle's own tuned values (a genuinely harder puzzle type — more categories, more clue types to cross-reference per attempt), but well short of a straight `*10+60`-style formula, which drew explicit "too generous" feedback on the timeline puzzle. Untrained (+0) gets 50s; a +20 stat gets ~3:10.
+
+### Clue completeness → the PC's odds, not the dimension tier
+
+Identical axis to the timeline puzzle: `neededRoll = clamp(dc - totalPcStat, 1, 20)`, `clueMode = neededRoll <= 10 ? 'full' : 'reduced'`. Computed live in `onAttempt()` — not fixed at request time (there is no "request time" generation step at all for this feature, see "Architecture lessons" above).
+
+### Solution generation
+
+One suspect list, one room list, and (if 3-category) one motive list are sampled (shuffle + slice) from their banks. `permRoom` is a random bijection suspect-index → room-index; if 3-category, `permMotive` is a SECOND, INDEPENDENT random bijection suspect-index → motive-index. These permutations ARE the truth — the events are context-free, same philosophy as the timeline puzzle's `sampleTrueOrder`.
+
+### Grid derivation (2-category: 1 grid; 3-category: 3 grids)
+
+Each grid needs a `trueColForRow` array (length N) giving, for each row index, the column index that's actually true. **This needs care for the Room×Motive grid specifically**: `permRoom`/`permMotive` are both indexed by *suspect*, but the Room×Motive grid's rows are *rooms*, not suspects — naively reusing suspect-indexed pairs for that grid would silently misattribute every clue and cell-check on it to the wrong room. The correct derivation inverts through the shared suspect index:
+
+```js
+if (gridKey === 'suspectRoom')   trueColForRow[i] = permRoom[i];            // i = suspect index
+if (gridKey === 'suspectMotive') trueColForRow[i] = permMotive[i];          // i = suspect index
+if (gridKey === 'roomMotive')    trueColForRow[permRoom[i]] = permMotive[i]; // row = room index
+```
+
+This is a valid N-length bijection on the Room×Motive grid: `permRoom` is onto, so every room index gets exactly one assignment; `permMotive` is injective, so two different rooms (via two different suspects) can never collide on the same motive. A dedicated Plan-agent validation pass caught this as a real bug in an earlier draft of this design (which used the suspect-indexed pairs directly for all three grids) before any code was written.
+
+### Clue generation
+
+Same accepted philosophy as the timeline puzzle: generate a reasonable clue budget scaled by `clueMode`, do **not** attempt to guarantee unique logical solvability via a real constraint solver — genuine ambiguity is resolved by free, unpenalized, unlimited Check Matrix attempts. Two always-true-by-construction primitives:
+
+- **Negative clue** (one per grid, any of the 1-3 grids): pick a row, pick a column that is NOT that row's true column, state "{row item} was not {col item}" (or, for the Room×Motive grid, an impersonal phrasing per the spec's own "Exclusive Clue" example: "The person motivated by {motive} was not in {room}" — treated as the same underlying primitive, just phrased differently when the grid doesn't name a suspect directly). One clue per row (N total) in `full` mode; one row dropped at random in `reduced` mode (N-1) — independently per grid, never sharing one dropped index across multiple grids.
+- **Connected/disjunction clue** (only when `categoryCount === 3` — nothing to connect across with just Suspect×Room): for each suspect, state "{suspect} was either in {decoy or true room} or motivated by {true or decoy motive}" with exactly one side genuinely true (chosen randomly per clue) and the other a deliberate decoy — true by construction regardless of which side is real. One per suspect (N) in `full` mode, one dropped in `reduced` mode (N-1).
+
+**Accepted design gap**: unlike the timeline puzzle's "full" clue mode, which fully chain-determines a unique solution, Alibi Matrix's "full" clue budget does **not** guarantee a uniquely solvable matrix even at N=3 — one negative clue per row eliminates only 1 of the N-1 wrong columns per row, and nothing here mathematically forces uniqueness the way timeline's adjacency chain does. This is consistent with the stated philosophy above, not a bug — flagged explicitly so it isn't mistaken for a regression relative to timeline's stricter guarantee.
+
+### Validation and outcomes
+
+A grid is "fully correct" iff exactly N cells are in `check` state AND every one of them is a true pair — if the count is right but any checked cell is wrong, at least one correct cell is necessarily missing too (since a wrong cell displaced it to keep the count at N), so a simple `length === N && every(isTrue)` check correctly rejects every malformed case (too many checks, too few, right count but wrong cells).
+
+- Correct submission (all grids simultaneously fully correct) within the first 25% of `baseTimeAllowanceSeconds` elapsed → **criticalSuccess**; 26-100% → **success**.
+- Timer expires with ≥1 whole grid fully correct → **failure** (per spec, this is still plain failure, not a partial-credit tier). 0 grids fully correct → **criticalFailure**.
+- If `allowCriticalOutcomes` is off: criticalSuccess collapses to success, criticalFailure collapses to failure.
+- No mistake-penalty or lockout mechanic, same as the timeline puzzle — all four outcomes stay freely re-attemptable via a fresh GM request.
+
+### Data model
+
+**ChatMessage flag** (`flags['pf2e-customizations'].alibiMatrix`, write-once): `{ actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes }` — raw GM inputs only, nothing derived.
+
+**Actor flag** (`flags['pf2e-customizations'].alibiMatrix.<messageId>`, mutable): `{ claimedBy, resolved }`, same shape as the other two features.
+
+### Interaction and window sizing
+
+Grid cells are plain `<div data-action="cycleCell" data-grid-index data-row data-col role="button" tabindex="0">` elements (not `<button>` — see "Architecture lessons" above), cycling state on click via a direct DOM patch (class + textContent), never a full re-render — same "don't disrupt the running timer" principle as the timeline puzzle's card reordering. The puzzle window's width varies per attempt: `AlibiMatrixApp.run()` passes `position: { width: categoryCount === 3 ? 1080 : 420 }` as an instance-level constructor option (merged over `DEFAULT_OPTIONS.position` before first paint, since both sibling apps already spread `...options` into `super(options)`), so 3-category puzzles get enough room to show all three grids side by side without a post-render resize/flash.
+
+### Open implementation questions
+
+1. `buildSkillOptions()`/`skillLabel()` are duplicated a third time in `request-alibi-matrix.js` (the timeline puzzle already duplicates rather than importing from lock-picking) — consistent with this module's existing no-shared-logic-module-between-features convention, but worth reconsidering if a fourth skill-based feature appears.
+2. Negative/connected clues are generated independently per grid/per suspect with no de-duplication pass — two clues could restate very similar information (e.g. two negative clues on different grids both excluding the same suspect from different wrong values). Not fixed; a minor flavor-variety concern, not a correctness one.
+3. See "Clue generation" above for the accepted full-mode-doesn't-guarantee-uniqueness gap relative to the timeline puzzle's stricter chain-determined guarantee.
+4. Default content banks (12 suspects/rooms/motives each) are generic mystery-novel names, not matched to any particular campaign setting — same "GM can reskin freely" expectation as the timeline puzzle's event bank, demonstrated by the user replacing that bank's content directly after the feature shipped.

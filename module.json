@@ -31,7 +31,8 @@
   "styles": [
     "styles/features/item-durability.css",
     "styles/features/lock-picking.css",
-    "styles/features/timeline-puzzle.css"
+    "styles/features/timeline-puzzle.css",
+    "styles/features/alibi-matrix.css"
   ],
   "languages": [
     {

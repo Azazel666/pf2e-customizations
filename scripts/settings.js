@@ -89,4 +89,24 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'factSifterEnabled', {
+    name: 'pf2e-customizations.settings.factSifter.name',
+    hint: 'pf2e-customizations.settings.factSifter.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'factSifterHideInstructions', {
+    name: 'pf2e-customizations.settings.factSifterHideInstructions.name',
+    hint: 'pf2e-customizations.settings.factSifterHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
 }

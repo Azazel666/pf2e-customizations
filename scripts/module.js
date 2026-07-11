@@ -3,11 +3,13 @@ import { initItemDurability } from './features/item-durability/item-durability.j
 import { initLockPicking } from './features/lock-picking/lock-picking-chat.js';
 import { initTimelinePuzzle } from './features/timeline-puzzle/timeline-puzzle-chat.js';
 import { initAlibiMatrix } from './features/alibi-matrix/alibi-matrix-chat.js';
+import { initFactSifter } from './features/fact-sifter/fact-sifter-chat.js';
 import { initSetItemDurabilityMacro } from './macros/set-item-durability.js';
 import { initApplyItemDamageMacro } from './macros/apply-item-damage.js';
 import { initRequestLockPickMacro } from './macros/request-lock-pick.js';
 import { initRequestTimelinePuzzleMacro } from './macros/request-timeline-puzzle.js';
 import { initRequestAlibiMatrixMacro } from './macros/request-alibi-matrix.js';
+import { initRequestFactSifterMacro } from './macros/request-fact-sifter.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -28,9 +30,14 @@ Hooks.once('init', () => {
     initAlibiMatrix();
   }
 
+  if (game.settings.get('pf2e-customizations', 'factSifterEnabled')) {
+    initFactSifter();
+  }
+
   initSetItemDurabilityMacro();
   initApplyItemDamageMacro();
   initRequestLockPickMacro();
   initRequestTimelinePuzzleMacro();
   initRequestAlibiMatrixMacro();
+  initRequestFactSifterMacro();
 });

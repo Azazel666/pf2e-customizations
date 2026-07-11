@@ -258,3 +258,114 @@ Grid cells are plain `<div data-action="cycleCell" data-grid-index data-row data
 2. Negative/connected clues are generated independently per grid/per suspect with no de-duplication pass — two clues could restate very similar information (e.g. two negative clues on different grids both excluding the same suspect from different wrong values). Not fixed; a minor flavor-variety concern, not a correctness one.
 3. See "Clue generation" above for the accepted full-mode-doesn't-guarantee-uniqueness gap relative to the timeline puzzle's stricter chain-determined guarantee.
 4. Default content banks (12 suspects/rooms/motives each) are generic mystery-novel names, not matched to any particular campaign setting — same "GM can reskin freely" expectation as the timeline puzzle's event bank, demonstrated by the user replacing that bank's content directly after the feature shipped.
+5. **Open bug**: grid cells (the `<div data-action="cycleCell">` elements) are currently reported as not responding to clicks at all. Ruled out so far: Foundry's action-dispatch framework has no tag-type restriction (traced directly in `application.mjs`'s `_attachFrameListeners`/`#onClick`/`#onClickAction` — delegation is via `event.target.closest("[data-action]")`, works on any element); `pointer-events`/`[role="button"]`-keyed base Foundry CSS (checked directly, neither exists). Also clarifying a previously-inaccurate claim: this `<div>`-not-`<button>` choice was a *proactive* design decision for these specific small (36×36px) fixed-size cells, not a retrofit fix for a proven button bug — timeline-puzzle's own small move-buttons are, and always have been, real `<button>` elements with `!important`-forced sizing, and they work correctly today. Root cause still unknown pending browser-console/inspect-element diagnostics. `fact-sifter` (Phase 5) deliberately used `<button>` for its own interactive rows specifically to avoid depending on this unresolved pattern.
+
+## Phase 5: The Fact Sifter
+
+An information-filtration puzzle, the fourth investigation minigame alongside lock-picking, the timeline puzzle, and the alibi matrix. The player is shown a shuffled pool of short text "fragments" — a coherent chain of mutually-supportive true facts mixed with deceptive noise (direct contradictions of specific facts, plus pure filler) — and must highlight exactly the true fragments while filtering out the rest, against a countdown timer. Built directly on alibi-matrix's/timeline-puzzle's **final** (already-debugged) architecture from the start.
+
+### Flow
+
+1. GM runs `pf2eCustomizations.requestFactSifter()`. Same Dialog shape as the other two features: target PC, "Investigate Skill" (16 `CONFIG.PF2E.skills` + manually-added Perception), a raw Task Target DC (never clamped), a Circumstantial Mod (signed, default 0), an "Allow Critical Outcomes" checkbox (default on).
+2. On Send, the macro stores only the GM's raw inputs on the `ChatMessage`'s flags, write-once. No pool/scenario generation happens at request time at all.
+3. Claim/outcome state lives on the actor's flags, same shape and rationale as the other three features.
+4. Clicking "Attempt Sift" claims the attempt, THEN calls `generateAttempt()` fresh (in `onAttempt()`) to produce the fragment pool, and opens `FactSifterApp` with it. Re-attempting the same request — including after cancelling — gets a genuinely regenerated pool each time.
+5. Same instructions/ready/help/started gate as the other features — `#stage` controls the full instructions text (skippable via `factSifterHideInstructions` client setting), `#started` is independent and always starts `false`, and a single `begin` action is the only thing that reveals fragments/countdown and starts the clock. No Cancel button.
+6. The player clicks fragment rows to toggle highlight on/off (binary, not alibi-matrix's tri-state), and can click "Confirm Findings" any time — a wrong submission is a free, unpenalized visual flash; no mistake counter, no lockout.
+7. On an exact-match submission (selected set === true-fact set, both count and content), the clock stops and the outcome is decided by elapsed-time percentage. On expiration, the outcome is decided by the ratio of correct-to-selected fragments. Closing the window before either (titlebar X) resolves as `cancelled` and never writes `resolved`.
+
+### DC handling
+
+Same principle as the other three features: DC used exactly as entered, never clamped. The DC→pool-size table below is a fixed 4-tier lookup, open-ended at both extremes — "never clamped" means the raw DC drives the bucket lookup, not that pool size grows unboundedly with extreme DC values.
+
+### No `neededRoll`/`clueMode` axis
+
+Unlike timeline-puzzle and alibi-matrix (which both have a secondary "clue completeness vs. the PC's odds" axis because their specs explicitly asked for one), Fact Sifter's difficulty is driven by DC alone — pool size and noise ratio come straight from the table below. Deliberately not inventing a secondary axis; not every feature needs identical mechanical depth.
+
+### DC → pool size
+
+| DC | Tier | True Facts | Noise Fragments | Total Pool |
+|---|---|---|---|---|
+| ≤15 | Easy | 3 | 3 | 6 |
+| 16-25 | Medium | 4 | 5 | 9 |
+| 26-35 | Hard | 5 | 7 | 12 |
+| ≥36 | Expert | 6 | 10 | 16 |
+
+### Content model
+
+Bank content (`FACT_CHAIN_BANK` in `fact-sifter-logic.js`) is pre-authored, GM-editable text used directly, verbatim — no `game.i18n.localize` indirection, the same lesson learned from timeline-puzzle's event-bank bug. Two independent scenarios, each a chain of exactly 6 pre-written `{ fact, noise: [option1, option2] }` links plus a per-scenario `irrelevantNoise` pool of 8 pure-filler texts. Every fact/noise/irrelevantNoise string within a scenario must be pairwise unique (convention only, not runtime-checked).
+
+**Authoring rule for chain links (REQUIRED, learned from a real playtest incident)**: fact `i≥2` must verbatim-restate one specific, checkable token from fact `i-1`'s TRUE value, in **all three** of its own variants (true + both noise options) — varying only its own newly-introduced detail. This is what makes the chain traceable once fragments are shuffled into a flat, order-scrambled list: a player scans the pool for the sentence containing that exact token, and disambiguates among its ~3 candidates using the rest of the chain they've already anchored.
+
+The original v1 content (a sci-fi signal/sector scenario and a ledger/clerk-station scenario, since replaced — see "Fantasy reskin" below) violated this rule by using implicit pronoun references ("that entry", "an offline station") instead of a restated token. A player reported the puzzle was "basically just chance and guessing" and pasted an actual Medium-tier attempt where fact 1 ("4,120 credits") and fact 2 ("That entry was logged under...") shared zero verbatim token — completely unlinked once shuffled, since a pronoun has no fixed antecedent among several candidate sentences. Both scenarios were rewritten to restate a concrete token at every link and verified with a scripted per-link token-presence check plus a full-pool uniqueness/collision check. Any new scenario added to the bank must follow the same rule or risk reintroducing unsolvable content.
+
+**Two follow-up bugs found via a second playtest report, both in the "verified" v2 content** — the initial verification script only checked that the token appeared in all three of the *next* fact's variants, which turned out to be necessary but not sufficient:
+
+- **Not an exact substring.** Fact `i`'s own TRUE text must contain the *literal* token fact `i+1` restates, not a close paraphrase. Scenario A's fact 5 said "six **hours**" while fact 6 restated "six**-hour**"; Scenario B's fact 3 said "entire **prior** shift" while fact 4 restated "entire shift" (no "prior"). Neither is an exact substring match, so a player scanning for the exact phrase from fact 6/4 would never find its source in fact 5/3 — the link silently didn't exist. Fixed by rewording the earlier fact to literally contain the phrase the later fact restates.
+- **Token leaking into the fact's own noise.** The forward token must appear in fact `i`'s TRUE variant *only* — if it also appears in one of fact `i`'s own noise options, then restating it one link later no longer disambiguates between them (both look equally corroborated). This is exactly what a player hit: they correctly found 3 fragments containing "vacant" (Scenario A facts 3 and 4's true values, plus one drawn noise option for fact 4), but fact 4's noise option "an unattended relay in **Sector C**..." also contained the literal phrase "unattended relay" — the same token fact 5 restates — so two of the three "vacant"-containing fragments were indistinguishable via that token. Fixed by rewording the colliding noise option to avoid the phrase entirely.
+
+Both issues are now checked by the same verification script (three checks per link: token is an exact substring of fact `i`'s TRUE text; token appears in all three of fact `i+1`'s variants; token does NOT appear in fact `i`'s own noise options) before any chain content is considered done.
+
+**~~Accepted structural limitation~~ (superseded — see "Closing leads" below)**: the *first* fact in a chain has nothing to corroborate against (it's the anchor, but gets corroborated forward via fact 2 restating its token instead), and the *last* fact in any truncated tier-prefix has no forward corroboration for its own newly-introduced detail (the fact that would restate it doesn't exist in the pool at that tier). This was originally accepted as a bounded (~3-way) judgment call mitigated by free retries — a fourth playtest report showed that framing was too generous; see below.
+
+**Fantasy reskin (third playtest round)**: the shipped content — signal relays, sector designations, credits, clerk stations — read as sci-fi/cyberpunk rather than the module's high-fantasy PF2e setting. Both scenarios were rewritten with fantasy flavor while preserving the exact same chain structure and token-chaining rule: Scenario A is now a watchtower's signal-fire investigation (tokens: violet → Ashwatch → empty → watch-sprite → six hours), Scenario B a temple's forged tithe-ledger investigation (tokens: 120 gold → Brother Ostan → pilgrimage → forged → three years old). The reskin also deliberately favors short, distinctive tokens — proper nouns (a tower name, a monk's name) and short noun phrases — over long generic clauses like the old "offline for the entire shift": a name or short phrase is far easier to spot on a re-scan under time pressure than a multi-word clause. Several UI strings that also read as sci-fi chrome (`instructionsTitle`, `verifyDataset` action label, `fragmentsLabel`, `card.inProgressSelf`, `card.alreadyClaimed`, `card.failure`, `card.criticalFailure`) were reworded at the same time — "Verify Dataset" is now "Confirm Findings", "Data Fragments" is now "Fragments", etc.
+
+**Closing leads (fourth playtest round — the real fix for the "last fact" gap)**: despite the fantasy reskin's shorter, more scannable tokens, a player still reported the puzzle "way too hard... this would be a nat 1 every time" and pasted a full Medium-tier transcript. Tracing it confirmed the "accepted structural limitation" above was not a minor inconvenience but a **guaranteed, unsolvable coin-flip** on one of the four required facts, regardless of player skill: the player correctly traced 3 of the 4 required facts via cross-referencing, but the 4th (the tier's last included link) had zero corroborating information anywhere in the generated pool — nothing left to compare it against, by construction.
+
+The fix mirrors what timeline-puzzle and alibi-matrix already do (show given clues separately from the thing being deduced), scoped down to the minimum needed: each scenario now has a `closingLeads` map (`fact-sifter-logic.js`) keyed by `trueFactCount` (3, 4, and 5 — deliberately no entry for 6/Expert), each a single GIVEN sentence containing the exact token the excluded next-link would have restated. `generateAttempt()` now returns `{ fragments, closingLead }` instead of a flat array; `closingLead` is looked up as `scenario.closingLeads[trueFactCount] ?? null` and is `null` at Expert tier by design. The app (`FactSifterApp`) stores and renders it as a `.fact-sifter-lead` line above the fragment list — visually distinct (accent border, italic) and **never** a `data-action`/selectable element, so it can't be mistaken for one of the fragments to pick. It is not counted toward `trueFactCount` or `poolSize`.
+
+This closes exactly the one genuinely unsolvable gap while leaving every other required fact's resolution to real cross-referencing effort — re-tracing the reported transcript with the new Ashwatch-scenario lead ("A passing forester swears a watch-sprite was seen darting around the beacon after midnight.") confirmed the entire 4-fact chain becomes solvable end-to-end via backward propagation from that one given fact. Expert tier (all 6 links, no lead) deliberately keeps its final fact as a narrative-logic inference rather than a token restatement — a genuine capstone judgment call for the hardest tier, not an oversight; revisit if that turns out not to hold up in play either.
+
+**Generation algorithm** (`generateAttempt`, called fresh in `onAttempt()` every time): pick a random scenario; take a *contiguous prefix* of the chain (not a random subset — later facts genuinely build on earlier ones, e.g. "the Ashwatch tower is warded to burn violet" only makes sense once "the signal fire burns violet" is established, so an arbitrary subset like links 2,4,6 without 1,3,5 could read as narratively incoherent); draw one targeted noise option per true fact; fill any remaining noise quota from both noise options of unused chain links plus the `irrelevantNoise` pool; shuffle the combined pool and assign display-order ids; look up the tier's `closingLead` (or `null` at Expert); return `{ fragments, closingLead }`.
+
+**Sufficiency verified** for a 6-link chain + 8-entry `irrelevantNoise` pool per scenario (`extraNeeded = noiseCount - trueFactCount`, `leftoverPool.length = 2×(6 - trueFactCount) + 8`, counting *both* noise options per unused link):
+
+| Tier | trueFactCount | noiseCount | extraNeeded | leftoverPool available |
+|---|---|---|---|---|
+| Easy | 3 | 3 | 0 | 14 |
+| Medium | 4 | 5 | 1 | 12 |
+| Hard | 5 | 7 | 2 | 10 |
+| Expert | 6 | 10 | 4 | 8 (tightest case, still sufficient) |
+
+**Accepted design consequence**: since the true chain is always a deterministic prefix, the *set of true-fact texts* for a given (scenario, tier) pair is fixed across repeated attempts — only the scenario pick, the decoy/filler mix, and the shuffle order vary. Less remix variety than timeline-puzzle or alibi-matrix (both fully re-permute their solution each time), an unavoidable consequence of preserving narrative coherence via prefix-only sampling. Not a v1 blocker; a future scenario-count increase (mirroring timeline's own event-bank growth from 14→~100 entries) is the natural follow-up if noticeable in play.
+
+### Time allowance
+
+```
+totalPcStat = live skill totalModifier (or actor.system.perception.totalModifier for Perception)
+              + stored circumstanceMod
+baseTimeAllowanceSeconds = totalPcStat * 7 + 60
+```
+
+Originally retuned down from the spec's suggested `*10+75` to `*5+40`, following the same pattern as timeline (`*10+60` → `*4+30`) and alibi-matrix (`*12+90` → `*7+50`). Bumped back up after playtesting showed `*5+40` was too tight for what this puzzle actually demands — a report that the connecting thread was "way too hard to realize with the short amount of time" prompted re-examining the earlier "none of alibi-matrix's cross-referencing" assumption below, which turned out to be wrong: solving this puzzle genuinely does require re-scanning the whole pool multiple times to trace a repeated token across fragments, much closer in effort to alibi-matrix's grid deduction than to a flat reading task. The formula now matches alibi-matrix's `*7+50` almost exactly, with a slightly higher base (60 vs. 50) reflecting the larger reading volume (up to 16 rows at Expert tier vs. alibi-matrix's fixed grid size): untrained gets 60s, a +20 stat gets 3:20.
+
+**Watch-item, not a blocker**: at Expert tier, a low-to-moderate stat character (e.g. +8 → 116s) has 16 rows to read plus toggle-time — the tightest combination in the whole {tier}×{stat} matrix. Inherent to a flat per-stat-point formula applied to a tiered reading-volume puzzle; a genuine playtest question, not a design flaw.
+
+### Validation and outcomes
+
+Exact-match check: the player's selected fragment ids must equal the true-fact ids exactly (same count AND same set). Wrong count and wrong content both get the same generic non-blocking glitch flash — no distinct messaging between the two cases, matching the other features' "any wrong submission gets the same flash" precedent.
+
+- Correct submission within the first 25% of `baseTimeAllowanceSeconds` elapsed → **criticalSuccess**; 26-100% → **success**.
+- Timer expires: `ratio = selectedCount > 0 ? correctSelectedCount / selectedCount : 0`. `ratio > 0.5` → **failure**. `ratio <= 0.5` → **criticalFailure** (the `selectedCount === 0` case explicitly falls into this bucket, matching the spec's "failed to select any true facts at all" wording). Verified boundary: exactly 50% correct (e.g. 2-of-4 selected true) lands on criticalFailure, matching "half or fewer."
+- If `allowCriticalOutcomes` is off: criticalSuccess collapses to success, criticalFailure collapses to failure.
+- No mistake-penalty or lockout mechanic — all four outcomes stay freely re-attemptable via a fresh GM request.
+
+### Data model
+
+**ChatMessage flag** (`flags['pf2e-customizations'].factSifter`, write-once): `{ actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes }` — raw GM inputs only.
+
+**Actor flag** (`flags['pf2e-customizations'].factSifter.<messageId>`, mutable): `{ claimedBy, resolved }`, same shape as the other features.
+
+### Interaction and element choice
+
+Fragment rows are real `<button type="button" data-action="toggleFragment">` elements (**not** `<div>`, unlike alibi-matrix's grid cells) — binary toggle on click, direct DOM patch (class only, no full re-render). This is a deliberate choice given alibi-matrix's `<div data-action="cycleCell">` cells are currently reported as not responding to clicks at all (see Phase 4's "Open implementation questions" item 5) — `<button data-action>` is the most battle-tested interactive pattern in this codebase, and Fact Sifter's rows are naturally full-width text anyway, so there's no small-fixed-size styling reason to prefer `<div>` here the way there was for alibi-matrix's 36×36px grid squares. `!important` is still applied defensively on `display: block`, `width: 100%`, `text-align: left`, and padding so each row reliably reads as a document/log list line rather than a default centered button. The window uses a static 560px width (no per-attempt variance needed, unlike alibi-matrix's categoryCount-driven width) with the fragment list scrolling via `max-height`/`overflow-y: auto` as a safety net for the 16-row Expert case.
+
+**Row-height bug (found via playtest)**: Foundry's base `button` CSS forces `height`/`min-height: var(--button-size)` (a fixed ~26-28px single-line-label size), which the `display: block` override didn't account for. Wrapped multi-line fragment text overflowed below that fixed-height box and was visually painted over by the next row in the flex-column list — every row but the last had its overflow silently hidden, so only the final fragment was fully readable. Fixed by adding `height: auto !important; min-height: 0 !important;` (plus `white-space: normal !important; overflow-wrap: break-word !important;` as insurance) to `.fact-sifter-fragment-row`.
+
+### Open implementation questions
+
+1. `buildSkillOptions()`/`skillLabel()` duplicated a fourth time — consistent with this module's no-shared-logic-module convention.
+2. See "Content model" above for the accepted fixed-true-text-set consequence of prefix-only chain sampling, the required token-chaining authoring rule, and the "Closing leads" fix for the last-fact corroboration gap.
+3. See "Time allowance" above for the Expert-tier reading-time watch-item.
+4. Both scenario banks now use high-fantasy investigation flavor (a watchtower's signal-fire, a temple's forged tithe-ledger — see "Fantasy reskin" above) rather than any specific campaign setting — same "GM can reskin freely" expectation as the other features' content banks.
+5. Expert tier (DC≥36) ships with no `closingLead` at all — its final fact is meant to be solvable via narrative logic rather than a given corroboration. This is the least playtested part of the mechanic; if it turns out to be as unsolvable as the pre-fix Medium tier was, the fix is the same: add a `closingLeads[6]` entry per scenario.

@@ -1,0 +1,221 @@
+/* ---------- Manager app (GM authoring) ---------- */
+
+.puzzle-board-manager-app {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.puzzle-board-manager-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.puzzle-board-create-form {
+  border: 1px solid var(--color-border-light-tertiary, #4b5563);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.puzzle-board-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.puzzle-board-manager-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.puzzle-board-manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-light-tertiary, #4b5563);
+  border-radius: 4px;
+}
+
+.puzzle-board-manager-row-name {
+  font-weight: bold;
+  margin: 0;
+}
+
+.puzzle-board-manager-row-status {
+  font-size: 11px;
+  opacity: 0.8;
+  margin: 2px 0 0;
+}
+
+.puzzle-board-manager-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+}
+
+.puzzle-board-manager-empty {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* ---------- Roll-request chat card ---------- */
+
+.puzzle-board-card-gm-dc {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 2px 0 4px;
+}
+
+/* ---------- Player-facing board app ---------- */
+
+.puzzle-board-app {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+}
+
+.puzzle-board-loading {
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.puzzle-board-instructions p {
+  margin: 0 0 8px;
+}
+
+.puzzle-board-dont-show-again {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.puzzle-board-instructions-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.puzzle-board-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.puzzle-board-header {
+  font-weight: bold;
+  margin: 0;
+}
+
+.puzzle-board-placed-count {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.puzzle-board-toolbar {
+  display: flex;
+  gap: 6px;
+}
+
+/* A scrollable window onto a fixed logical board — the board itself is a compact fixed-size
+   reference frame (see puzzle-board-logic.js's computeBoardFrame): the assembly area on top, the
+   tray directly below it, sized to comfortably fit without scrolling for a typical piece count. */
+.puzzle-board-viewport {
+  flex: 1 1 auto;
+  overflow: auto;
+  border: 1px solid var(--color-border-light-tertiary, #4b5563);
+  border-radius: 4px;
+  background-color: #111827;
+}
+
+.puzzle-board-board {
+  position: relative;
+  transform-origin: 0 0;
+}
+
+/* Purely an orientation guide — where the assembled image's own footprint sits within the larger
+   board frame. Deliberately NOT a ghost overlay of the actual image (that would trivialize visual
+   matching); each piece's own canvas already shows its real slice of the picture, same as a real
+   jigsaw piece. */
+.puzzle-board-target-guide {
+  position: absolute;
+  border: 1px dashed var(--color-border-light-tertiary, #4b5563);
+  border-radius: 2px;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* The tray's own rectangle — where unplaced pieces start piled up and overlapping. A distinct
+   (solid, slightly tinted) border from the assembly area's dashed guide so the two are easy to
+   tell apart at a glance. */
+.puzzle-board-tray-guide {
+  position: absolute;
+  border: 1px solid var(--color-border-light-tertiary, #4b5563);
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.puzzle-board-tray-label {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.puzzle-board-piece {
+  position: absolute;
+  cursor: grab;
+  touch-action: none;
+}
+
+.puzzle-board-piece canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.puzzle-board-piece.is-dragging {
+  cursor: grabbing;
+}
+
+/* Deliberately no visual difference for .is-placed — the class is tracked in JS for solve
+   detection, but must never render any hint of correctness to players (an earlier drop-shadow
+   here was a real, unwanted "you got this one right" tell and was removed for exactly that
+   reason). Placement is something the player has to judge by eye against the target guide, same
+   as picking a real puzzle piece up and eyeballing where it goes. */
+
+.puzzle-board-solved {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.puzzle-board-solved-image {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 4px;
+}

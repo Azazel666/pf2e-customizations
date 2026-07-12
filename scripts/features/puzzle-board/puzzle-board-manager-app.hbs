@@ -1,0 +1,62 @@
+<div class="puzzle-board-manager-app">
+  <div class="puzzle-board-manager-toolbar">
+    {{#unless creatingPuzzle}}
+      <button type="button" data-action="showCreateForm" class="default">{{localize "pf2e-customizations.puzzleBoard.manager.createButton"}}</button>
+    {{/unless}}
+  </div>
+
+  {{#if creatingPuzzle}}
+    <form class="puzzle-board-create-form" data-puzzle-board-create-form>
+      <div class="form-group">
+        <label>{{localize "pf2e-customizations.puzzleBoard.manager.createForm.name"}}</label>
+        <div class="form-fields"><input type="text" name="name"></div>
+      </div>
+      <div class="form-group">
+        <label>{{localize "pf2e-customizations.puzzleBoard.manager.createForm.image"}}</label>
+        <div class="form-fields"><file-picker type="image" name="imagePath" value=""></file-picker></div>
+      </div>
+      <div class="form-group">
+        <label>{{localize "pf2e-customizations.puzzleBoard.manager.createForm.pieceCount"}}</label>
+        <div class="form-fields"><input type="number" name="pieceCount" value="{{defaultPieceCount}}" min="4"></div>
+      </div>
+      <div class="puzzle-board-form-actions">
+        <button type="button" data-action="submitCreateForm" class="default">{{localize "pf2e-customizations.puzzleBoard.manager.createForm.create"}}</button>
+        <button type="button" data-action="cancelCreateForm">{{localize "pf2e-customizations.puzzleBoard.manager.cancel"}}</button>
+      </div>
+    </form>
+  {{/if}}
+
+  {{#if hasRows}}
+    <ul class="puzzle-board-manager-list">
+      {{#each rows}}
+        <li class="puzzle-board-manager-row" data-journal-entry-id="{{journalEntryId}}">
+          <div class="puzzle-board-manager-row-main">
+            <p class="puzzle-board-manager-row-name">{{name}}</p>
+            <p class="puzzle-board-manager-row-status">
+              {{statusLabel}}
+              {{#if difficultyLabel}} &mdash; {{difficultyLabel}}{{/if}}
+              {{#if pendingActorName}} &mdash; {{localize "pf2e-customizations.puzzleBoard.manager.awaitingRoll"}} {{pendingActorName}}{{/if}}
+              {{#if solved}} &mdash; {{localize "pf2e-customizations.puzzleBoard.manager.solvedLabel"}}{{/if}}
+              &mdash; {{pieceCount}} {{localize "pf2e-customizations.puzzleBoard.manager.piecesLabel"}}
+            </p>
+          </div>
+          <div class="puzzle-board-manager-row-actions">
+            {{#if canRequestRoll}}
+              <button type="button" data-action="requestRoll">{{localize "pf2e-customizations.puzzleBoard.manager.requestRollButton"}}</button>
+            {{/if}}
+            {{#if canResolveManually}}
+              <button type="button" data-action="resolveManually">{{localize "pf2e-customizations.puzzleBoard.manager.resolveManuallyButton"}}</button>
+            {{/if}}
+            {{#if canReveal}}
+              <button type="button" data-action="reveal" class="default">{{localize "pf2e-customizations.puzzleBoard.manager.revealButton"}}</button>
+            {{/if}}
+            <button type="button" data-action="rename">{{localize "pf2e-customizations.puzzleBoard.manager.renameButton"}}</button>
+            <button type="button" data-action="delete">{{localize "pf2e-customizations.puzzleBoard.manager.deleteButton"}}</button>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p class="puzzle-board-manager-empty">{{localize "pf2e-customizations.puzzleBoard.manager.empty"}}</p>
+  {{/if}}
+</div>

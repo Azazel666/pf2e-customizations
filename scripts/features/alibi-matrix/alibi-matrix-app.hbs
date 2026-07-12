@@ -1,0 +1,81 @@
+<div class="alibi-matrix-app {{#if (eq stage "puzzle")}}is-puzzle{{else}}is-instructions{{/if}}">
+  {{#if (eq stage "instructions")}}
+    <div class="alibi-matrix-instructions">
+      <h2>{{localize "pf2e-customizations.alibiMatrix.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.alibiMatrix.instructionsBody"}}</p>
+      <p class="alibi-matrix-dimension-label">{{localize "pf2e-customizations.alibiMatrix.dimensionLabel"}}: {{dimensionLabel}}</p>
+      <label class="alibi-matrix-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.alibiMatrix.dontShowAgain"}}
+      </label>
+      <div class="alibi-matrix-actions">
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.alibiMatrix.begin"}}</button>
+      </div>
+    </div>
+  {{else if helpVisible}}
+    <div class="alibi-matrix-instructions">
+      <h2>{{localize "pf2e-customizations.alibiMatrix.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.alibiMatrix.instructionsBody"}}</p>
+      <div class="alibi-matrix-actions">
+        <button type="button" data-action="closeHelp" class="default">{{localize "pf2e-customizations.alibiMatrix.closeHelp"}}</button>
+      </div>
+    </div>
+  {{else}}
+    <div class="alibi-matrix-header-row">
+      <p class="alibi-matrix-header">{{actorName}}</p>
+      <button type="button" class="alibi-matrix-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.alibiMatrix.helpButton'}}">?</button>
+    </div>
+
+    {{#if started}}
+      <p class="alibi-matrix-countdown-label">{{localize "pf2e-customizations.alibiMatrix.timeRemainingLabel"}}</p>
+      <p class="alibi-matrix-countdown" data-alibi-matrix-countdown>--:--</p>
+
+      <p class="alibi-matrix-clues-label">{{localize "pf2e-customizations.alibiMatrix.cluesLabel"}}</p>
+      <ul class="alibi-matrix-clues">
+        {{#each clueTexts}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+
+      <div class="alibi-matrix-grids">
+        {{#each grids}}
+          <table class="alibi-matrix-grid" data-alibi-matrix-grid="{{gridIndex}}">
+            <caption>{{title}}</caption>
+            <thead>
+              <tr>
+                <th></th>
+                {{#each colLabels}}<th>{{this}}</th>{{/each}}
+              </tr>
+            </thead>
+            <tbody>
+              {{#each rows}}
+                <tr>
+                  <th>{{rowLabel}}</th>
+                  {{#each cells}}
+                    <td>
+                      <div class="alibi-matrix-cell is-{{state}}" data-action="cycleCell"
+                           data-grid-index="{{gridIndex}}" data-row="{{row}}" data-col="{{col}}"
+                           role="button" tabindex="0">{{symbol}}</div>
+                    </td>
+                  {{/each}}
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        {{/each}}
+      </div>
+
+      <div class="alibi-matrix-actions">
+        <button type="button" data-action="checkMatrix" class="default">{{localize "pf2e-customizations.alibiMatrix.checkMatrix"}}</button>
+      </div>
+    {{else}}
+      <div class="alibi-matrix-ready">
+        <p>{{localize "pf2e-customizations.alibiMatrix.readyBody"}}</p>
+        <p class="alibi-matrix-dimension-label">{{localize "pf2e-customizations.alibiMatrix.dimensionLabel"}}: {{dimensionLabel}}</p>
+        <div class="alibi-matrix-actions">
+          <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.alibiMatrix.start"}}</button>
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>

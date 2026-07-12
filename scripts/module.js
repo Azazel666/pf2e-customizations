@@ -1,9 +1,20 @@
 import { registerSettings } from './settings.js';
 import { initItemDurability } from './features/item-durability/item-durability.js';
 import { initLockPicking } from './features/lock-picking/lock-picking-chat.js';
+import { initTimelinePuzzle } from './features/timeline-puzzle/timeline-puzzle-chat.js';
+import { initAlibiMatrix } from './features/alibi-matrix/alibi-matrix-chat.js';
+import { initFactSifter } from './features/fact-sifter/fact-sifter-chat.js';
+import { initJigsawPuzzle } from './features/jigsaw-puzzle/jigsaw-puzzle-chat.js';
+import { initPuzzleBoard } from './features/puzzle-board/puzzle-board-roll-listener.js';
 import { initSetItemDurabilityMacro } from './macros/set-item-durability.js';
 import { initApplyItemDamageMacro } from './macros/apply-item-damage.js';
 import { initRequestLockPickMacro } from './macros/request-lock-pick.js';
+import { initRequestTimelinePuzzleMacro } from './macros/request-timeline-puzzle.js';
+import { initRequestAlibiMatrixMacro } from './macros/request-alibi-matrix.js';
+import { initRequestFactSifterMacro } from './macros/request-fact-sifter.js';
+import { initRequestJigsawPuzzleMacro } from './macros/request-jigsaw-puzzle.js';
+import { initManagePuzzleBoardsMacro } from './macros/manage-puzzle-boards.js';
+import { initOpenPuzzleBoardMacro } from './macros/open-puzzle-board.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -16,7 +27,33 @@ Hooks.once('init', () => {
     initLockPicking();
   }
 
+  if (game.settings.get('pf2e-customizations', 'timelinePuzzleEnabled')) {
+    initTimelinePuzzle();
+  }
+
+  if (game.settings.get('pf2e-customizations', 'alibiMatrixEnabled')) {
+    initAlibiMatrix();
+  }
+
+  if (game.settings.get('pf2e-customizations', 'factSifterEnabled')) {
+    initFactSifter();
+  }
+
+  if (game.settings.get('pf2e-customizations', 'jigsawPuzzleEnabled')) {
+    initJigsawPuzzle();
+  }
+
+  if (game.settings.get('pf2e-customizations', 'puzzleBoardEnabled')) {
+    initPuzzleBoard();
+  }
+
   initSetItemDurabilityMacro();
   initApplyItemDamageMacro();
   initRequestLockPickMacro();
+  initRequestTimelinePuzzleMacro();
+  initRequestAlibiMatrixMacro();
+  initRequestFactSifterMacro();
+  initRequestJigsawPuzzleMacro();
+  initManagePuzzleBoardsMacro();
+  initOpenPuzzleBoardMacro();
 });

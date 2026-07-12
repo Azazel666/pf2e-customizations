@@ -1,0 +1,65 @@
+<div class="fact-sifter-app {{#if (eq stage "puzzle")}}is-puzzle{{else}}is-instructions{{/if}}">
+  {{#if (eq stage "instructions")}}
+    <div class="fact-sifter-instructions">
+      <h2>{{localize "pf2e-customizations.factSifter.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.factSifter.instructionsBody"}}</p>
+      <p class="fact-sifter-pool-size-label">{{localize "pf2e-customizations.factSifter.poolSizeLabel"}}: {{poolSize}}</p>
+      <p class="fact-sifter-true-fact-count-label">{{localize "pf2e-customizations.factSifter.trueFactCountLabel"}}: {{trueFactCount}}</p>
+      <label class="fact-sifter-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.factSifter.dontShowAgain"}}
+      </label>
+      <div class="fact-sifter-actions">
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.factSifter.begin"}}</button>
+      </div>
+    </div>
+  {{else if helpVisible}}
+    <div class="fact-sifter-instructions">
+      <h2>{{localize "pf2e-customizations.factSifter.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.factSifter.instructionsBody"}}</p>
+      <div class="fact-sifter-actions">
+        <button type="button" data-action="closeHelp" class="default">{{localize "pf2e-customizations.factSifter.closeHelp"}}</button>
+      </div>
+    </div>
+  {{else}}
+    <div class="fact-sifter-header-row">
+      <p class="fact-sifter-header">{{actorName}}</p>
+      <button type="button" class="fact-sifter-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.factSifter.helpButton'}}">?</button>
+    </div>
+
+    {{#if started}}
+      <p class="fact-sifter-countdown-label">{{localize "pf2e-customizations.factSifter.timeRemainingLabel"}}</p>
+      <p class="fact-sifter-countdown" data-fact-sifter-countdown>--:--</p>
+
+      {{#if closingLead}}
+        <p class="fact-sifter-lead"><strong>{{localize "pf2e-customizations.factSifter.leadLabel"}}</strong> {{closingLead}}</p>
+      {{/if}}
+
+      <div class="fact-sifter-fragments-header-row">
+        <p class="fact-sifter-fragments-label">{{localize "pf2e-customizations.factSifter.fragmentsLabel"}}</p>
+        <p class="fact-sifter-selected-count" data-fact-sifter-selected-count>
+          {{localize "pf2e-customizations.factSifter.selectedCountLabel" selected=selectedCount total=trueFactCount}}
+        </p>
+      </div>
+      <div class="fact-sifter-fragment-list" data-fact-sifter-fragment-list>
+        {{#each fragments}}
+          <button type="button" class="fact-sifter-fragment-row{{#if selected}} is-selected{{/if}}"
+                  data-action="toggleFragment" data-fragment-id="{{id}}">{{text}}</button>
+        {{/each}}
+      </div>
+
+      <div class="fact-sifter-actions">
+        <button type="button" data-action="verifyDataset" class="default">{{localize "pf2e-customizations.factSifter.verifyDataset"}}</button>
+      </div>
+    {{else}}
+      <div class="fact-sifter-ready">
+        <p>{{localize "pf2e-customizations.factSifter.readyBody"}}</p>
+        <p class="fact-sifter-pool-size-label">{{localize "pf2e-customizations.factSifter.poolSizeLabel"}}: {{poolSize}}</p>
+        <p class="fact-sifter-true-fact-count-label">{{localize "pf2e-customizations.factSifter.trueFactCountLabel"}}: {{trueFactCount}}</p>
+        <div class="fact-sifter-actions">
+          <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.factSifter.start"}}</button>
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>

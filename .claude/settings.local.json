@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"D:\\\\FoundryVTT-Data\\\\Data\\\\modules\\\\pf2e-customizations\" -Force)",
-      "Bash(Select-Object Name, PSIsContainer)"
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(claude --version)",
+      "Read(//c/Users/matti/.claude/**)",
+      "Bash(npm -g config get prefix)",
+      "Bash(ls \"$\\(npm -g config get prefix \\)/node_modules\")"
     ]
   }
 }

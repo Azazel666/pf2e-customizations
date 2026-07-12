@@ -1,0 +1,64 @@
+<div class="timeline-puzzle-app {{#if (eq stage "puzzle")}}is-puzzle{{else}}is-instructions{{/if}}">
+  {{#if (eq stage "instructions")}}
+    <div class="timeline-puzzle-instructions">
+      <h2>{{localize "pf2e-customizations.timelinePuzzle.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.timelinePuzzle.instructionsBody"}}</p>
+      <p class="timeline-puzzle-event-count-label">{{localize "pf2e-customizations.timelinePuzzle.eventCountLabel"}}: {{eventCount}}</p>
+      <label class="timeline-puzzle-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.timelinePuzzle.dontShowAgain"}}
+      </label>
+      <div class="timeline-puzzle-actions">
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.timelinePuzzle.begin"}}</button>
+      </div>
+    </div>
+  {{else if helpVisible}}
+    <div class="timeline-puzzle-instructions">
+      <h2>{{localize "pf2e-customizations.timelinePuzzle.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.timelinePuzzle.instructionsBody"}}</p>
+      <div class="timeline-puzzle-actions">
+        <button type="button" data-action="closeHelp" class="default">{{localize "pf2e-customizations.timelinePuzzle.closeHelp"}}</button>
+      </div>
+    </div>
+  {{else}}
+    <div class="timeline-puzzle-header-row">
+      <p class="timeline-puzzle-header">{{actorName}}</p>
+      <button type="button" class="timeline-puzzle-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.timelinePuzzle.helpButton'}}">?</button>
+    </div>
+
+    {{#if started}}
+      <p class="timeline-puzzle-countdown-label">{{localize "pf2e-customizations.timelinePuzzle.timeRemainingLabel"}}</p>
+      <p class="timeline-puzzle-countdown" data-timeline-puzzle-countdown>--:--</p>
+
+      <p class="timeline-puzzle-clues-label">{{localize "pf2e-customizations.timelinePuzzle.cluesLabel"}}</p>
+      <ul class="timeline-puzzle-clues">
+        {{#each clueTexts}}
+          <li>{{this}}</li>
+        {{/each}}
+      </ul>
+
+      <ol class="timeline-puzzle-grid" data-timeline-puzzle-grid>
+        {{#each eventBlocks}}
+          <li class="timeline-event-block" draggable="true" data-event-id="{{id}}">
+            <span class="timeline-event-index">{{index}}</span>
+            <button type="button" class="timeline-event-move-button is-left" data-action="moveLeft" data-event-id="{{id}}" title="{{localize 'pf2e-customizations.timelinePuzzle.moveLeft'}}">&#9664;</button>
+            <button type="button" class="timeline-event-move-button is-right" data-action="moveRight" data-event-id="{{id}}" title="{{localize 'pf2e-customizations.timelinePuzzle.moveRight'}}">&#9654;</button>
+            <span class="timeline-event-label">{{label}}</span>
+          </li>
+        {{/each}}
+      </ol>
+
+      <div class="timeline-puzzle-actions">
+        <button type="button" data-action="checkOrder" class="default">{{localize "pf2e-customizations.timelinePuzzle.checkOrder"}}</button>
+      </div>
+    {{else}}
+      <div class="timeline-puzzle-ready">
+        <p>{{localize "pf2e-customizations.timelinePuzzle.readyBody"}}</p>
+        <p class="timeline-puzzle-event-count-label">{{localize "pf2e-customizations.timelinePuzzle.eventCountLabel"}}: {{eventCount}}</p>
+        <div class="timeline-puzzle-actions">
+          <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.timelinePuzzle.start"}}</button>
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>

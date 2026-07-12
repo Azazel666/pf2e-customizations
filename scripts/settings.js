@@ -49,4 +49,135 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'timelinePuzzleEnabled', {
+    name: 'pf2e-customizations.settings.timelinePuzzle.name',
+    hint: 'pf2e-customizations.settings.timelinePuzzle.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'timelinePuzzleHideInstructions', {
+    name: 'pf2e-customizations.settings.timelinePuzzleHideInstructions.name',
+    hint: 'pf2e-customizations.settings.timelinePuzzleHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'alibiMatrixEnabled', {
+    name: 'pf2e-customizations.settings.alibiMatrix.name',
+    hint: 'pf2e-customizations.settings.alibiMatrix.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'alibiMatrixHideInstructions', {
+    name: 'pf2e-customizations.settings.alibiMatrixHideInstructions.name',
+    hint: 'pf2e-customizations.settings.alibiMatrixHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'factSifterEnabled', {
+    name: 'pf2e-customizations.settings.factSifter.name',
+    hint: 'pf2e-customizations.settings.factSifter.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'factSifterHideInstructions', {
+    name: 'pf2e-customizations.settings.factSifterHideInstructions.name',
+    hint: 'pf2e-customizations.settings.factSifterHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleEnabled', {
+    name: 'pf2e-customizations.settings.jigsawPuzzle.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzle.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleCustomImageFolder', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleCustomImageFolder.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleCustomImageFolder.hint',
+    scope: 'world',
+    config: true,
+    type: String,
+    default: '',
+    filePicker: 'folder',
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleIncludeBundledWithCustom', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleIncludeBundledWithCustom.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleIncludeBundledWithCustom.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleHideInstructions', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleHideInstructions.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'puzzleBoardEnabled', {
+    name: 'pf2e-customizations.settings.puzzleBoard.name',
+    hint: 'pf2e-customizations.settings.puzzleBoard.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'puzzleBoardHideInstructions', {
+    name: 'pf2e-customizations.settings.puzzleBoardHideInstructions.name',
+    hint: 'pf2e-customizations.settings.puzzleBoardHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  // No UI — a thin index (id/name/journalEntryId/revealed/createdAt per puzzle), read/written only
+  // by scripts/features/puzzle-board/puzzle-board-data.js. See that file's own comments for why
+  // runtime puzzle state (difficulty/solved/pieces) deliberately isn't mirrored here.
+  game.settings.register('pf2e-customizations', 'puzzleBoardIndex', {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: { puzzles: [] },
+  });
 }

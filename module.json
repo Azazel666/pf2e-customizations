@@ -30,7 +30,12 @@
   ],
   "styles": [
     "styles/features/item-durability.css",
-    "styles/features/lock-picking.css"
+    "styles/features/lock-picking.css",
+    "styles/features/timeline-puzzle.css",
+    "styles/features/alibi-matrix.css",
+    "styles/features/fact-sifter.css",
+    "styles/features/jigsaw-puzzle.css",
+    "styles/features/puzzle-board.css"
   ],
   "languages": [
     {

@@ -111,6 +111,202 @@ Enable via **Game Settings > Module Settings > Lock Picking Minigame**.
 
 ---
 
+### Chronological Timeline Puzzle
+
+A drag-and-drop timeline-sorting puzzle that stands in for a flat investigation/information-gathering skill check. The player arranges shuffled event cards into their correct chronological order using clues, against a countdown timer.
+
+#### Request Timeline Puzzle (Macro)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestTimelinePuzzle();
+```
+
+**Usage (GM):**
+
+1. Run the macro.
+2. Pick the target **Character**, the **Skill** to check (any PF2e skill, plus Perception), a **DC** (any number, not limited to preset tiers), and an optional **Circumstance Modifier**. **Allow Critical Outcomes** is on by default.
+3. Click **Send** — a chat card is posted publicly. The DC is never shown to players; it's rendered GM-only on the card.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Puzzle (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Timeline** on the chat card. Only one attempt can be in flight at a time.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** deals the event cards and starts the clock.
+3. Drag the cards (or use the arrow buttons) to put them in chronological order using the clues shown. Click **Check Order** any time to test the current arrangement — a wrong guess costs nothing, so try freely.
+4. Solving it correctly stops the clock; running out of time scores the attempt based on how many cards ended up in the right position.
+
+**Difficulty scaling:**
+- The number of event cards is derived from the DC alone (3 cards at DC 15 or below, up to 6 at DC 36+).
+- Clue completeness is a separate axis, derived from the acting character's live odds of success on the check (skill total vs. DC): a character who'd need a low roll to succeed gets the full set of clues (uniquely determines the order); one who'd need a high roll gets one clue fewer, leaving a small gap resolved by free trial and error.
+- The time allowed scales with the character's live skill total.
+
+Enable via **Game Settings > Module Settings > Timeline Puzzle Minigame**.
+
+---
+
+### The Alibi Matrix
+
+A full logic-grid deduction puzzle ("Zebra puzzle" style) that stands in for a flat investigation/social skill check. The player cross-references clues to work out which suspect was in which room for which motive.
+
+#### Request Alibi Matrix (Macro)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestAlibiMatrix();
+```
+
+**Usage (GM):**
+
+1. Run the macro.
+2. Pick the target **Character**, the **Skill** to check, a **DC**, and an optional **Circumstance Modifier**. **Allow Critical Outcomes** is on by default.
+3. Click **Send** — a chat card is posted publicly. The DC is never shown to players; it's rendered GM-only on the card.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Puzzle (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Matrix** on the chat card. Only one attempt can be in flight at a time.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** generates the grid(s) and clues, and starts the clock.
+3. Click a cell to cycle it blank → ✗ → ✓, using the clues to eliminate impossible pairings and confirm the true ones. Click **Check Matrix** any time to test the current grid(s) — a wrong guess costs nothing, so try freely.
+4. Solving all grids correctly stops the clock; running out of time scores the attempt based on how many grids ended up fully correct.
+
+**Difficulty scaling:**
+- Matrix size is derived from the DC alone: a single 3×3 Suspect × Room grid at DC 15 or below, up to three linked 4×4 grids (Suspect × Room, Suspect × Motive, Room × Motive) at DC 36+.
+- Clue completeness is a separate axis, derived the same way as the timeline puzzle's — the acting character's live odds of success against the DC.
+- The time allowed scales with the character's live skill total.
+
+Enable via **Game Settings > Module Settings > Alibi Matrix Minigame**.
+
+---
+
+### The Fact Sifter
+
+An information-filtration puzzle that stands in for a flat investigation/research skill check. The player is shown a shuffled pool of short text fragments — a chain of true, mutually-corroborating facts mixed with deceptive noise — and must pick out exactly the true ones by tracing a repeated detail from fragment to fragment.
+
+#### Request Fact Sifter (Macro)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestFactSifter();
+```
+
+**Usage (GM):**
+
+1. Run the macro.
+2. Pick the target **Character**, the **Skill** to check, a **DC**, and an optional **Circumstance Modifier**. **Allow Critical Outcomes** is on by default.
+3. Click **Send** — a chat card is posted publicly. The DC is never shown to players; it's rendered GM-only on the card.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Puzzle (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Sift** on the chat card. Only one attempt can be in flight at a time.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** deals the fragment pool and starts the clock.
+3. Click a fragment to highlight it as one you believe is true; click again to un-highlight it. Look for a specific, repeated detail that shows up in more than one fragment — an echoed detail is likely part of the true thread, while a fragment with no matching detail anywhere else is likely a decoy. At some difficulty levels a **Lead** is shown above the fragments — a fact the investigation has already confirmed, not something to sift yourself. Click **Confirm Findings** any time to test the current selection — a wrong guess costs nothing, so try freely.
+4. Selecting exactly the true fragments stops the clock; running out of time scores the attempt based on the ratio of correct-to-selected fragments.
+
+**Difficulty scaling:**
+- Pool size and the number of true fragments needed are derived from the DC alone (3 true facts among 6 fragments at DC 15 or below, up to 6 true facts among 16 fragments at DC 36+).
+- The time allowed scales with the character's live skill total.
+
+Enable via **Game Settings > Module Settings > Fact Sifter Minigame**.
+
+---
+
+### Jigsaw Puzzle Minigame
+
+An image-reassembly puzzle that stands in for a flat investigation/perception-style skill check. The player reconstructs a shuffled picture by moving pieces from a tray into a matching grid, against a countdown timer.
+
+#### Request Jigsaw Puzzle (Macro)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestJigsawPuzzle();
+```
+
+**Usage (GM):**
+
+1. Run the macro.
+2. Pick the target **Character**, the **Skill** to check, a **DC**, and an optional **Circumstance Modifier**. **Allow Critical Outcomes** is on by default.
+3. Pick an **Image Source** — **Random** (default) draws from the module's bundled images plus any custom folder you've configured, or **Specific Image** to pin one exact picture for this request.
+4. Click **Send** — a chat card is posted publicly. The DC is never shown to players; it's rendered GM-only on the card.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Puzzle (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Puzzle** on the chat card. Only one attempt can be in flight at a time.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** shuffles the tray and starts the clock.
+3. Drag a piece from the tray into a grid slot to place it, drag between two placed pieces to swap them, or drag a placed piece back to the tray to remove it — clicking a piece then clicking a target works the same way if dragging is inconvenient. There's no penalty for a wrong placement: a slot will happily hold the wrong piece, so compare against how the picture should look and rearrange freely. Click **Check Puzzle** any time to test the current arrangement — a wrong or incomplete attempt costs nothing, so try freely.
+4. Solving it correctly stops the clock; running out of time scores the attempt based on the fraction of pieces that ended up in their correct slot.
+
+**Difficulty scaling:**
+- Grid size is derived from the DC alone (4×4 = 16 pieces at DC 15 or below, up to 6×5 = 30 pieces at DC 36+).
+- The time allowed scales with both the character's live skill total and the piece count — a bigger grid gets more time, not just the same clock stretched over more pieces.
+
+**Image source:**
+- By default, images are drawn at random from the module's bundled folder.
+- A GM can configure a custom image folder (**Jigsaw Puzzle: Custom Image Folder** setting) to add their own images to the random pool, optionally alongside the bundled ones (**Jigsaw Puzzle: Also Include Bundled Images**).
+- A GM can also pin one specific image for a single request via the macro's **Image Source** dropdown.
+
+Enable via **Game Settings > Module Settings > Jigsaw Puzzle Minigame**.
+
+---
+
+### Puzzle Board Minigame
+
+A persistent, collaborative free-drag puzzle board — unlike every other minigame in this module, it doesn't stand in for a dice roll. Instead, a PC's real skill/Perception check permanently sets how hard a given puzzle is to solve. Any number of players can work on it together, with no timer, across as many sessions as it takes, as a downtime activity.
+
+#### Manage Puzzle Boards (Macro, GM)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.managePuzzleBoards();
+```
+
+**Usage (GM):**
+
+1. Run the macro to open the Manage Puzzle Boards window.
+2. Click **Create Puzzle** — give it a name, pick an image, and set a piece count (default 24).
+3. Click **Request Difficulty Roll** on that puzzle's row — pick the PC, the skill (or Perception) to roll, a DC, and an optional circumstance modifier (told to the player as a note, not applied automatically). This posts a chat card asking that PC to roll, with a **Roll Now** convenience button.
+4. Once the PC's roll resolves — automatically, the moment a matching check lands in chat, or manually via **Resolve Manually** if no GM was online at the time — the puzzle's difficulty locks in permanently and the row shows **Ready to reveal**.
+5. Click **Reveal to Party** — this posts a public chat card with an **Open Puzzle** button, and makes the puzzle available to the Open Puzzle Board macro below.
+
+Rename or delete a puzzle at any time from its row. There's no "replace image" option — since a puzzle's pieces are generated from its image, changing the image means deleting and recreating the puzzle.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Open Puzzle Board (Macro, Player)
+
+**Setup:** Create a world macro (or hotbar macro, usable by any player) with this single line:
+
+```js
+pf2eCustomizations.openPuzzleBoard();
+```
+
+**Usage:**
+
+1. Run the macro (or click **Open Puzzle** on the reveal chat card). If only one puzzle has been revealed, it opens directly; otherwise, pick one from a short list.
+2. Drag pieces around freely — there are no discrete slots. A dashed rectangle marks about where the finished picture belongs; a solid-bordered **Tray** area below it is where pieces start out, piled up and overlapping.
+3. Pieces don't need to be pixel-perfect, just close to their spot — once every piece is close enough, the puzzle completes automatically for everyone.
+4. Anyone can help, at any time, across as many sessions as it takes — there's no timer and no penalty for stepping away mid-puzzle. The window can be reopened later exactly where it was left off.
+5. Zoom in/out and use **Center View** as needed — the board's width automatically matches the window and rescales live as you resize it.
+
+**Difficulty scaling:**
+- The GM's requested check's degree of success sets the puzzle's piece shape, once, forever: a **critical success** cuts the most jagged, irregular pieces (easiest to visually sort, since jagged edges hint at which piece goes where — like a real jigsaw's interlocking shapes); a **critical failure** cuts perfectly uniform squares (hardest, since every piece looks identical with no cue about where it belongs).
+- Piece count is set once by the GM at creation and doesn't change with the roll.
+
+Enable via **Game Settings > Module Settings > Puzzle Board Minigame**.
+
+---
+
 ## Installation
 
 ### Manual
@@ -136,6 +332,18 @@ Settings marked **World** are GM-only, under **Game Settings > Module Settings**
 | Lock Picking Mistake Threshold | World | 3 | Mistakes allowed before a lock picking attempt critically fails |
 | Skip Lock Picking Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
 | Lock Picking: Show Sweet Spot (Debug) | Client | Off | Draws each pin's correct window on the dial, for testing/tuning only |
+| Timeline Puzzle Minigame | World (reload) | Off | Enable the interactive chronological-order puzzle |
+| Skip Timeline Puzzle Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Alibi Matrix Minigame | World (reload) | Off | Enable the interactive logic-grid deduction puzzle |
+| Skip Alibi Matrix Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Fact Sifter Minigame | World (reload) | Off | Enable the interactive information-filtration puzzle |
+| Skip Fact Sifter Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Jigsaw Puzzle Minigame | World (reload) | Off | Enable the interactive image-reassembly puzzle |
+| Jigsaw Puzzle: Custom Image Folder | World | (none) | Optional folder of your own images to draw from at random |
+| Jigsaw Puzzle: Also Include Bundled Images | World | On | Also include the bundled images when a custom folder is set |
+| Skip Jigsaw Puzzle Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Puzzle Board Minigame | World (reload) | Off | Enable the persistent, collaborative free-drag puzzle board |
+| Skip Puzzle Board Instructions | Client | Off | Don't show the how-to-play screen before opening a puzzle board |
 
 ---
 

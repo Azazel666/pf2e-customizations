@@ -369,3 +369,143 @@ Fragment rows are real `<button type="button" data-action="toggleFragment">` ele
 3. See "Time allowance" above for the Expert-tier reading-time watch-item.
 4. Both scenario banks now use high-fantasy investigation flavor (a watchtower's signal-fire, a temple's forged tithe-ledger — see "Fantasy reskin" above) rather than any specific campaign setting — same "GM can reskin freely" expectation as the other features' content banks.
 5. Expert tier (DC≥36) ships with no `closingLead` at all — its final fact is meant to be solvable via narrative logic rather than a given corroboration. This is the least playtested part of the mechanic; if it turns out to be as unsolvable as the pre-fix Medium tier was, the fix is the same: add a `closingLeads[6]` entry per scenario.
+
+## Phase 6: Jigsaw Puzzle Minigame
+
+An image-reassembly puzzle, the fifth minigame alongside lock-picking, timeline-puzzle, alibi-matrix, and fact-sifter — and the **first feature in this codebase to load/manipulate an image at all** (no canvas, no PIXI, no FilePicker usage anywhere else in the module). A random (or GM-pinned) image is sliced into a grid of rectangular tiles, scrambled into a tray, and the player has to drag/click them into the correctly-positioned grid before a difficulty-scaled countdown expires.
+
+### Flow
+
+1. GM runs `pf2eCustomizations.requestJigsawPuzzle()`. Same Dialog shape as the other four features (target PC, "Investigate Skill" incl. Perception, raw Task Target DC, Circumstantial Mod, "Allow Critical Outcomes" checkbox default-on), plus an Image Source control: a `<select name="imageSourceMode">` (`random` default / `specific`) and a native v13 `<file-picker type="image" name="specificImagePath">` element, used only when `specific` is chosen.
+2. On Send, the macro **resolves the actual image right there** (see "Image source & FilePicker integration" below for why this moved here instead of attempt time) — either the GM's pinned pick, or a fresh random draw from the assembled bundled+custom pool — and preloads it (`new Image()`, awaiting `onload`) to read its natural pixel dimensions, needed once to lock the puzzle's aspect ratio. A failed pool (no images found) or a failed/corrupt image load aborts the request with an error notification before any `ChatMessage` is even created. The macro stores `{ actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes, imagePath, aspectRatio }` on the `ChatMessage`'s flags, write-once.
+3. Claim/outcome state lives on the actor's flags (`flags['pf2e-customizations'].jigsawPuzzle.<messageId>`), identical rationale/shape to the other four features.
+4. Clicking "Attempt Puzzle" claims the attempt (same optimistic-lock pattern: write `claimedBy`, re-read to confirm it settled to your own user id), then `onAttempt()` in `jigsaw-puzzle-chat.js` calls `generateAttempt({ dc, imagePath: config.imagePath, aspectRatio: config.aspectRatio })` (pure, in `jigsaw-puzzle-logic.js`, synchronous — no FilePicker/network calls at attempt time at all) to get grid dimensions and a fresh randomized tray order, then opens `JigsawPuzzleApp`. Re-attempting the same request — including after cancelling — always gets a fresh tray shuffle, but reuses the same image the GM already resolved at request time (see below for why).
+5. Same instructions/ready/help/`#started` gate as all four siblings: `#stage` controls the full instructions text (skippable via the `jigsawPuzzleHideInstructions` client setting), `#started` is independent and always starts `false`, and a single `begin` action (shared by the instructions screen's Begin and the compact ready-screen's Start) is the only thing that reveals the tray/grid/countdown and starts the clock.
+6. The player fills the grid by dragging (or click-selecting, then click-targeting) tiles from the tray into slots, swapping two already-placed slots, or dragging a placed tile back to the tray to unplace it — all through one shared `#move(source, target)` engine, mirroring timeline-puzzle's "single source-of-truth array" precedent. A slot can hold the wrong tile with no rejection, no snap-back, and no mistake counter — only a subtle `.is-filled` "occupied" mark, never a correctness indicator. "Check Puzzle" can be clicked any time; a wrong or incomplete submission is a free, unpenalized glitch flash, same convention as three of the four sibling features.
+7. On a correct submission (every slot holds its correct tile), the clock stops and the outcome is decided by elapsed-time percentage. On expiration, the outcome is decided by the fraction of slots holding their correct tile. Closing the window before either (titlebar X) resolves as `cancelled` and never writes `resolved`, matching every sibling's fallback exactly.
+
+### DC handling
+
+Same principle as all four siblings: the GM's DC is used exactly as entered everywhere — grid-dimension lookup, the GM-only card line — and is never clamped. The DC→grid-dimensions table below is open-ended at both extremes, so DC 10 or DC 50 need no special-casing.
+
+### DC → grid dimensions
+
+| Tier | DC | Grid (cols × rows) | Pieces |
+|---|---|---|---|
+| Easy | ≤15 | 4 × 4 | 16 |
+| Medium | 16–25 | 5 × 4 | 20 |
+| Hard | 26–35 | 5 × 5 | 25 |
+| Expert | ≥36 | 6 × 5 | 30 |
+
+**Retuned after playtesting**: the original progression (3×2/3×3/4×3/4×4 = 6/9/12/16 pieces, deliberately mirroring fact-sifter's own pool-size tiers) played too easy at every tier, including Expert — a fixed-shape rectangular-tile jigsaw is a much easier visual-matching task per piece than fact-sifter's read-and-cross-reference puzzle, so borrowing its piece-count curve undersold the difficulty. 4×4/16 is now the *easiest* tier, scaling up to 6×5/30 at Expert. The time formula's per-piece term (see "Time allowance" below) already scales automatically with this, so larger grids get proportionally more time, not just a bigger board to fill in the same window.
+
+### Time allowance
+
+```
+totalPcStat = live skill totalModifier (actor.system.skills[slug].totalModifier, or
+              actor.system.perception.totalModifier for Perception) + stored circumstanceMod
+baseTimeAllowanceSeconds = totalPcStat * TIME_ALLOWANCE_PER_STAT_POINT
+                         + pieceCount * TIME_ALLOWANCE_PER_PIECE_SECONDS
+                         + TIME_ALLOWANCE_BASE_SECONDS
+```
+
+Read live when the puzzle opens (not snapshotted at request time), same as every sibling feature. First-draft constants (all in `JIGSAW_PUZZLE_CONFIG`): `TIME_ALLOWANCE_PER_STAT_POINT = 5`, `TIME_ALLOWANCE_PER_PIECE_SECONDS = 6`, `TIME_ALLOWANCE_BASE_SECONDS = 20`. Worked examples against the current (retuned) grid tiers: Easy (16 pieces)/untrained → 116s; Easy/+20 stat → 216s; Expert (30 pieces)/untrained → 200s; Expert/+20 stat → 300s.
+
+**Deliberate deviation from all four siblings**: this is the only feature where DC (via piece count) also drives the time formula directly, not just content volume. Justified because a jigsaw puzzle's manipulation effort scales close to linearly with piece count (each tile has to be located, evaluated, and dragged/placed) in a way timeline-puzzle's reorder, alibi-matrix's grid-fill, and fact-sifter's read-and-toggle don't — those all keep total on-screen elements roughly flat and let clue/pool-size do the difficulty work instead. Expect a retuning pass after playtesting, same as every sibling's own constants needed at least one.
+
+### No secondary clue-completeness axis
+
+Unlike timeline-puzzle and alibi-matrix, and matching fact-sifter's own precedent, this feature has no `neededRoll`/`clueMode` axis for v1 — difficulty is DC-driven only (grid size + timer). A "ghost overlay" concept (a faint full-image overlay behind the grid, shown only when the PC's odds are good — a natural analog to a real jigsaw box lid) was seriously considered during planning and explicitly deferred rather than forgotten; revisit if playtesting shows the puzzle wants more mechanical depth, especially at high DC where no positional reference exists at all.
+
+### Outcomes
+
+- Correct submission (every slot holds its correct tile) within the first 25% of `baseTimeAllowanceSeconds` elapsed → **criticalSuccess**.
+- Correct submission any time after that (but before expiration) → **success**.
+- Timer expires: `ratio = correctSlotCount / pieceCount`. `ratio >= 0.5` → **failure**. `ratio < 0.5` → **criticalFailure**.
+- If the GM unchecked "Allow Critical Outcomes" at request time: criticalSuccess collapses to success, criticalFailure collapses to failure.
+- No mistake-penalty or lockout mechanic: all four outcomes stay freely re-attemptable via a fresh GM request, same as timeline-puzzle/alibi-matrix/fact-sifter.
+
+**Important boundary note**: the `>=0.5 → failure` / `<0.5 → criticalFailure` direction is the *opposite* of fact-sifter's own ratio check (there, exactly 50% correct lands in criticalFailure). This is intentional, per this feature's own locked spec — not an inconsistency to "fix" to match fact-sifter.
+
+### Data model
+
+**ChatMessage flag** (`flags['pf2e-customizations'].jigsawPuzzle`, write-once): `{ actorId, dc, skillSlug, circumstanceMod, allowCriticalOutcomes, imagePath, aspectRatio }` — the GM's raw inputs, PLUS the already-resolved image path and its natural aspect ratio (see "Image source & FilePicker integration" below for why those two are resolved-and-baked-in here rather than at attempt time, unlike everything else in this data model).
+
+**Actor flag** (`flags['pf2e-customizations'].jigsawPuzzle.<messageId>`, mutable): `{ claimedBy, resolved }` where `resolved` is `null` or one of `'criticalSuccess' | 'success' | 'failure' | 'criticalFailure'` — same shape as every sibling.
+
+**Transient attempt payload** (generated fresh in `onAttempt()`, never stored): `{ imagePath, aspectRatio, cols, rows, pieceCount, trayOrder }`, passed into `JigsawPuzzleApp.run()`. `imagePath`/`aspectRatio` here are just copied straight through from the message flag; only `cols`/`rows`/`pieceCount`/`trayOrder` are actually generated fresh per attempt.
+
+### Image source & FilePicker integration
+
+**Fixed bug: players couldn't open the puzzle at all.** The first draft resolved the image pool (`FilePicker.browse`) inside `onAttempt()` — run by whichever player clicked "Attempt Puzzle" — and this failed for every non-GM player with "No puzzle images are available," even when the bundled folder had images in it. Root cause: `FilePicker.browse` requires the "Use File Browser" permission, which defaults to GM-only in a world's Permissions configuration for most installs — a real-world confirmation of the open risk flagged when this feature was first planned. **Fix**: image resolution now happens once, in the GM's request macro (`request-jigsaw-puzzle.js`), not in `onAttempt()` — the GM always has full browse permission, so this sidesteps the wall entirely. The cost is a deliberate, documented exception to "nothing derived is baked in at request time": the chosen image is now fixed for the life of a request (re-attempting after cancelling reuses the same image), where grid layout and tray shuffle still regenerate fresh every attempt. `onAttempt()` itself no longer touches images at all — it's back to being fully synchronous, same as every sibling feature.
+
+Three-layered image sourcing, assembled at request time (GM-run, so no permission issue):
+
+- **Bundled default folder** (`assets/features/jigsaw-puzzle/`), browsed via `foundry.applications.apps.FilePicker.browse('data', BUNDLED_IMAGE_DIR, { extensions: [...] })`.
+- **GM-configured custom folder** (`jigsawPuzzleCustomImageFolder`, a world-scope `String` setting using Foundry's native `filePicker: 'folder'` config key — this renders a text input plus a folder-browse button automatically; no manual `FilePicker` wiring is needed for this particular setting).
+- **`jigsawPuzzleIncludeBundledWithCustom`** (world-scope Boolean, default `true`): when a custom folder is set and this is on, the random pool is bundled+custom; when off, it's custom-folder-only.
+- **Per-request specific-image pin**: the GM's request Dialog includes a native v13 `<file-picker type="image" name="specificImagePath">` custom element (first use of this element in the codebase). Its value is read via direct `form.querySelector('file-picker[name="specificImagePath"]').value` on submit rather than trusted `FormData` pickup — this element's form-association inside a bare `Dialog`-rendered form (not a full `ApplicationV2` form) is unproven here and should be smoke-tested, mirroring this codebase's established "verify new API usage before assuming a call signature" discipline (see Phase 2's ApplicationV2 smoke-test note). "Random" stays available alongside "pick specific image" in the Dialog's `<select>` — most requests are still meant to be "any generic scene."
+
+At request time: `imagePath = imageSourceMode === 'specific' ? specificImagePath : await pickRandomImage()`, followed immediately by a preload (`new Image()`, awaiting `onload`) to compute `aspectRatio` before the `ChatMessage` is created — a failed pool or failed/corrupt load aborts the request with an error notification, never creating a broken chat card. No `module.json` manifest entry is needed for the new `assets/features/jigsaw-puzzle/` folder — arbitrary files under a module's own folder are auto-served by Foundry; the folder just needs to physically exist with placeholder content (recommend ≥6 varied images, matching Easy tier's piece count as a sane minimum pool size).
+
+### Image slicing mechanics
+
+Plain rectangular tiles via CSS `background-image` + percentage `background-size`/`background-position` — no canvas, no SVG clip-path, per the locked "no true interlocking jigsaw shapes" design decision.
+
+Per-piece math (`pieceBackgroundPosition` in `jigsaw-puzzle-logic.js`, pixel-dimension-independent by construction):
+
+```js
+export function pieceBackgroundPosition(pieceId, cols, rows) {
+  const col = pieceId % cols;
+  const row = Math.floor(pieceId / cols);
+  const x = cols > 1 ? (col / (cols - 1)) * 100 : 0;
+  const y = rows > 1 ? (row / (rows - 1)) * 100 : 0;
+  return {
+    backgroundSize: `${cols * 100}% ${rows * 100}%`,
+    backgroundPositionX: `${x}%`,
+    backgroundPositionY: `${y}%`,
+  };
+}
+```
+
+Derivation: setting an element's `background-size` to `cols*100% rows*100%` makes the background image `cols`/`rows` times the element's own box in each axis. CSS percentage `background-position` semantics (`0%` = image's left/top edge flush with box's left/top; `100%` = image's right/bottom edge flush with box's right/bottom) mean the correct percentage to reveal 0-indexed slice `c` of `cols` total is `c/(cols-1)*100%` (and analogously for rows). `pieceId` is always "this piece belongs at solved-grid position `pieceId`" — its background math never changes based on current tray/slot location, only *where the element currently is* changes (tracked separately in `#tray`/`#slots`).
+
+**Aspect-ratio handling**: since `background-size: cols*100% rows*100%` only produces an undistorted slice if the overall grid box's aspect ratio already matches the source image's natural proportions, the puzzle's grid container is locked to the image's own natural aspect ratio, read once via a preload step in `onAttempt()` (`naturalWidth`/`naturalHeight` → `aspectRatio = "${width} / ${height}"`), applied as an inline `aspect-ratio` CSS property. Tray tiles (not part of the CSS grid) get the matching per-piece ratio (`(naturalWidth/cols) / (naturalHeight/rows)`) so a loose tray tile shows the same undistorted crop as its eventual slot, without ever needing per-tile `cover`/`contain` crop-offset math.
+
+### Interaction model
+
+**Fixed bug: window ran nearly full-screen tall.** The grid and tray were originally stacked vertically (grid, then tray, then Check Puzzle), and once the grid tiers were retuned up to 6×5 (30 pieces) plus a tray sized large enough to actually preview each piece, the summed height of instructions/countdown/grid/tray/actions pushed the app window close to the player's full screen height. Fixed by putting the grid and tray **side by side** instead (`.jigsaw-puzzle-board`, a flex row of `.jigsaw-puzzle-grid-column` and `.jigsaw-puzzle-tray-column`), spending the window's *width* instead of its height. Tray tiles were also trimmed 10% (112px → 100px) as a first pass at the same problem, before the layout fix below made that scrolling concern moot entirely.
+
+**Fixed bug: tray required scrolling to see every piece.** The side-by-side fix above still had the tray wrap tiles at a fixed pixel width into a narrow scrollable column (`max-height`/`overflow-y: auto`) — workable, but the player explicitly wants to see every available piece at a glance, not hunt through a scrolled list while a timer runs. Fixed by having the tray mirror the grid's own `cols`/`rows`/`aspect-ratio` exactly (same inline `grid-template-columns`/`grid-template-rows`/`aspect-ratio` styling, applied in `jigsaw-puzzle-app.hbs` to both containers identically) instead of flex-wrapping fixed-size tiles. This guarantees exactly `cols × rows` (i.e. always ≥ `pieceCount`) cells are available, so every piece is visible with no scrolling at any grid size, by construction rather than by tuning a pixel budget — and it means tray tiles now shrink at the same rate as the grid's own cells as piece count goes up, rather than staying a fixed size and needing more rows. `#pieceAspectRatio`/`computePieceAspectRatio` (used to size tray tiles independently before this) were removed entirely — sizing now comes for free from each tile's parent CSS Grid, the same way grid slots already got theirs. The window was widened again (840 → 1000) since two same-sized boxes side by side need more combined width than one grid alone did.
+
+**State** (in `JigsawPuzzleApp`, private fields): `#tray` (array of piece ids not yet placed), `#slots` (length `pieceCount`, each `null` or a piece id — `#slots[i] === i` means slot `i` is correctly filled), `#selectedSource`/`#dragSource` (`null | {kind:'tray', pieceId} | {kind:'slot', slotIndex, pieceId}`), `#suppressNextClick` (guards a completed drag from also firing the click-fallback handler on the same element).
+
+**Element choice**: both tray tiles and grid slots are real `<button type="button">` (not `<div>`) — alibi-matrix's `<div data-action="cycleCell">` cells have a currently-unresolved click-unresponsiveness bug, while fact-sifter's `<button data-action>` is proven-working. The genuinely new wrinkle here: the *same* element needs to be both a native `draggable="true"` source and a `data-action`-driven click-fallback target — no existing feature combines those two on one element (timeline-puzzle's draggable `<li>` blocks and its click-fallback `◀/▶` buttons are deliberately separate elements). `draggable` is a standard attribute supported on any element including `<button>`, so there's no fundamental blocker, but this exact combination is untested in this codebase and should be smoke-tested early.
+
+**Core move engine** (`#move(source, target)`, single source of truth for both drag-drop and click-fallback, mirroring timeline-puzzle's `#displayOrder`-is-truth precedent): covers tray→empty slot (place), tray→filled slot (swap in/out), slot→slot (swap), and slot→tray (unplace, falls out of the same model for free). tray→tray matches no branch — a harmless no-op re-render, since there's nothing meaningful to swap between two unplaced pieces.
+
+**Native drag-and-drop**: every tray tile and every filled slot gets `dragstart`/`dragover`/`dragleave`/`drop`/`dragend` listeners, scoped to the `.jigsaw-puzzle-tile` class (not a bare attribute selector — reuses timeline-puzzle's documented lesson about nested elements sharing an attribute). `dragstart` must call `event.dataTransfer.setData(...)` for Firefox compatibility (the id itself is read back from `#dragSource`, a private field, not the transfer payload — same pattern timeline-puzzle established). The tray container itself is also a drop target (`data-jigsaw-puzzle-tray`) so a tile can be dropped into open tray space, not only onto an existing tray tile.
+
+**Click-select-then-click-place fallback**: first click on a tray tile or a filled slot selects it as the pending source (`.is-selected`); clicking it again deselects; clicking any other valid target (tray or slot) executes the same `#move()` used by drag-and-drop. Clicking an empty slot with nothing selected is a no-op. This exactly mirrors what native drag-and-drop does, on the same underlying `#tray`/`#slots` arrays.
+
+**Drag+click coexistence on one element**: `dragend` sets `#suppressNextClick = true` (cleared on the next microtask via `setTimeout(..., 0)`, not left permanently set) so a completed drag gesture's trailing click (if the browser fires one) doesn't also trigger the click-fallback's select/place logic on the same element. Standard mitigation pattern, but genuinely untested in this codebase — needs an in-app smoke test, not just a code-review pass.
+
+**Wrong placement handling**: a filled slot only ever gets `.is-filled` (a subtle "occupied" mark) — never `.is-correct`/`.is-wrong`. Correctness is only computed in aggregate, inside the Check Puzzle handler and the expiration handler, never rendered per-cell.
+
+**"Check Puzzle" submit button kept**, rather than auto-detecting a fully-filled board: auto-checking after every single tile move would mean flashing/evaluating on every accidental full-but-wrong intermediate state (a common state mid-puzzle, not just a final one) — a much naggier rhythm than any sibling feature. An explicit button keeps the same "player decides when to submit" rhythm as three of the four siblings.
+
+**Fixed bug: tray tiles rendered as flat rectangles instead of matching the actual piece shape.** Grid slots are forced to `width: 100%; height: 100%` (filling their CSS Grid cell, whose own proportions already match the locked aspect ratio), but tray tiles are sized by a fixed width plus an inline `aspect-ratio` style — and Foundry's base `<button>` CSS forces an explicit `height` (a single-line-label size) that silently wins over `aspect-ratio` unless overridden. The grid slot's own `height: 100%` rule happened to mask this, but tray tiles had no such override, so every tray tile rendered as a short wide rectangle regardless of the source image's real per-piece proportions. Fixed by adding `height: auto !important` to the shared `.jigsaw-puzzle-tile` base rule (same fix shape as fact-sifter's own row-height bug), letting `aspect-ratio` actually control the tray tile's height.
+
+**Tray tile size history**: originally a fixed 64px width, bumped to 112px, then trimmed 10% to 100px alongside the side-by-side layout change — all superseded by the "tray mirrors the grid" fix above, which sizes tray tiles by the same CSS Grid math as the grid's own slots rather than a standalone fixed pixel width. A player who can't tell tiles apart at a glance has no realistic path to a fast, crit-success-range solve — worth revisiting if the largest (30-piece) tier now renders tiles too small to read at a glance, given they're sized by dividing the tray box the same way the grid divides its own.
+
+### Open implementation questions
+
+1. Grid-dimension tiers (16/20/25/30 pieces) and their non-square shape (4×4/5×4/5×5/6×5) were retuned once already after playtesting showed the original 6/9/12/16 progression (mirroring fact-sifter's pool-size curve) was too easy at every tier — revisit again if 30 pieces at Expert now feels too slow to realistically finish in the crit-success window.
+2. Time-allowance formula includes a piece-count term, a deliberate deviation from all four siblings — all three constants (5/6/20) are first-draft guesses with worked examples shown above; expect a retuning pass, as every sibling needed one.
+3. The "ghost overlay" clue-completeness axis was seriously considered and explicitly deferred for v1, not forgotten — see "No secondary clue-completeness axis" above.
+4. Drag+click coexistence on the same element is genuinely untested in this codebase (every prior feature keeps its draggable element and its click-fallback control as two separate DOM elements). Needs an in-app smoke test before being trusted.
+5. `<file-picker>` custom element inside a `Dialog`-rendered form is the first use of this element anywhere in the codebase. Reading its value via direct `.value` access (rather than trusting `FormData`) is the safer default until smoke-tested.
+6. **Confirmed and fixed**: `FilePicker.browse('data', ...)` permission for non-GM callers was NOT reliable — real-world testing showed players got "No puzzle images are available" even with a populated bundled folder, because the "Use File Browser" permission commonly defaults to GM-only. Fixed by resolving the image (and its aspect ratio) once in the GM's request macro instead of in `onAttempt()` — see "Image source & FilePicker integration" above. Applied the documented fallback exactly as anticipated when this risk was first flagged.
+7. Bundled placeholder image content (`assets/features/jigsaw-puzzle/*.webp`) is a content-authoring task, not a code task — needs at least a handful of varied, license-clean images before this feature is playable at all.
+8. **Superseded**: `onAttempt()` no longer does any async image work at all (see item 6) — it's back to being fully synchronous, same shape as every sibling feature's `onAttempt()`. The GM's request macro is now the only place in this feature with an async external-asset failure mode (a failed pool or failed image load aborts the request before any `ChatMessage` is created).
+9. Tray tiles are now sized by dividing the tray box using the same CSS Grid math as the main grid's own slots (see the "tray mirrors the grid" fix in "Interaction model" above) rather than a standalone fixed pixel width — worth a playtest check that the largest (30-piece) tier still renders tiles large enough to read at a glance, since the tray box and the grid box are now equally-sized and neither gets to be bigger than the other.

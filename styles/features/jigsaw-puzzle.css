@@ -1,0 +1,240 @@
+.jigsaw-puzzle-app {
+  padding: 8px;
+}
+
+.jigsaw-puzzle-instructions p {
+  margin: 0 0 8px;
+}
+
+.jigsaw-puzzle-piece-count-label {
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.jigsaw-puzzle-dont-show-again {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 0 0 8px;
+}
+
+.jigsaw-puzzle-ready p {
+  margin: 0 0 8px;
+}
+
+.jigsaw-puzzle-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jigsaw-puzzle-header {
+  font-weight: bold;
+  margin: 0 0 4px;
+}
+
+.jigsaw-puzzle-help-button {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+.jigsaw-puzzle-countdown-label,
+.jigsaw-puzzle-grid-label,
+.jigsaw-puzzle-tray-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+  margin: 0;
+  text-align: center;
+}
+
+.jigsaw-puzzle-grid-label,
+.jigsaw-puzzle-tray-label {
+  text-align: left;
+  margin: 6px 0 4px;
+}
+
+.jigsaw-puzzle-grid-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jigsaw-puzzle-placed-count {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.jigsaw-puzzle-countdown {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  margin: 2px 0 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Grid and tray sit side by side (not stacked) so the puzzle spends the window's WIDTH rather than
+   its height — with grids now running up to 6x5 (30 pieces) plus a tray big enough to preview each
+   piece, stacking them vertically pushed the window close to full-screen height. */
+.jigsaw-puzzle-board {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 14px;
+  margin: 0 0 10px;
+}
+
+.jigsaw-puzzle-grid-column,
+.jigsaw-puzzle-tray-column {
+  flex: 1 1 0;
+  min-width: 0; /* allow the aspect-ratio-locked boxes to shrink below their content width if needed */
+}
+
+.jigsaw-puzzle-tray-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The fixed target grid. Aspect ratio and column/row counts are set inline per attempt (locked to
+   the source image's own natural proportions — see jigsaw-puzzle-chat.js's preload step) so tiles
+   never end up warping a mismatched image. */
+.jigsaw-puzzle-grid {
+  display: grid !important;
+  gap: 2px;
+  width: 100%;
+}
+
+/* The tray mirrors the grid's own cols/rows/aspect-ratio exactly (see jigsaw-puzzle-app.hbs) rather
+   than wrapping tiles at a fixed pixel size — this guarantees exactly enough cells for every piece,
+   so all of them are always visible with no scrolling, at any grid size (previously a flex-wrap
+   layout needed a scrollable overflow area once grids grew past a handful of pieces). It also means
+   tray tiles shrink at the same rate as the grid's own cells as piece count goes up, instead of
+   staying a fixed size and needing more and more rows. */
+.jigsaw-puzzle-tray {
+  display: grid !important;
+  gap: 2px;
+  width: 100%;
+  padding: 4px;
+  border: 1px dashed var(--color-border-light-tertiary, #4b5563);
+  border-radius: 4px;
+  box-sizing: border-box !important;
+}
+
+/* Both tray tiles and grid slots are real <button> elements, not <div> — alibi-matrix's
+   <div data-action="cycleCell"> cells have a currently-unresolved click-unresponsiveness bug, while
+   <button data-action> is proven-working elsewhere in this codebase (fact-sifter, timeline-puzzle's
+   move buttons). Structural properties are forced with !important since Foundry's base `button`
+   rule fights padding/sizing/background here, the same class of bug that hit fact-sifter's rows.
+   `height: auto` matters specifically: Foundry's base button rule forces a fixed `height` (a
+   single-line-label size), which silently overrides `aspect-ratio` for any tile that doesn't get
+   its own explicit height override — the width/height 100% rule below now covers both grid slots
+   and tray tiles the same way, since both sit in an identically-shaped CSS Grid. */
+.jigsaw-puzzle-tile {
+  display: block !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  border: 1px solid var(--color-border-light-tertiary, #4b5563);
+  border-radius: 2px;
+  background-color: #1f2937;
+  background-repeat: no-repeat !important;
+  cursor: pointer;
+}
+
+.jigsaw-puzzle-slot,
+.jigsaw-puzzle-tray-tile {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.jigsaw-puzzle-tile:hover {
+  border-color: #60a5fa;
+}
+
+/* Filled is a neutral "occupied" indicator only — deliberately NOT a correctness signal. A slot
+   holding the wrong tile still just gets .is-filled; the player has to eyeball the mismatch against
+   the rest of the picture themselves and re-drag it, per this feature's locked design. */
+.jigsaw-puzzle-slot.is-filled {
+  border-style: solid;
+  border-width: 2px;
+}
+
+/* Click-fallback's pending-selection highlight. */
+.jigsaw-puzzle-tile.is-selected {
+  outline: 2px solid #fbbf24;
+  outline-offset: -2px;
+}
+
+.jigsaw-puzzle-tile.is-drag-over {
+  outline: 2px dashed #60a5fa;
+  outline-offset: -2px;
+}
+
+.jigsaw-puzzle-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.jigsaw-puzzle-app.is-locked .jigsaw-puzzle-tile,
+.jigsaw-puzzle-app.is-locked .jigsaw-puzzle-actions button {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Non-blocking feedback for a wrong/incomplete Check Puzzle submission — no penalty, just a visual
+   nudge, same convention as the other three timed-puzzle features. */
+.jigsaw-puzzle-app.is-glitch .jigsaw-puzzle-grid {
+  animation: jigsaw-puzzle-glitch-flash 0.4s ease-out;
+}
+
+@keyframes jigsaw-puzzle-glitch-flash {
+  0% { filter: none; }
+  30% { filter: hue-rotate(15deg) contrast(1.3); }
+  60% { filter: hue-rotate(-10deg) contrast(1.1); }
+  100% { filter: none; }
+}
+
+.jigsaw-puzzle-card-gm-dc {
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.75;
+  margin: 2px 0 4px;
+}
+
+.jigsaw-puzzle-card-status {
+  margin-top: 4px;
+}
+
+.jigsaw-puzzle-card-outcome {
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+.jigsaw-puzzle-card-outcome.is-success {
+  color: #16a34a;
+}
+
+.jigsaw-puzzle-card-outcome.is-failure {
+  color: #b91c1c;
+}
+
+.jigsaw-puzzle-card-status-text {
+  font-style: italic;
+  margin: 4px 0;
+}

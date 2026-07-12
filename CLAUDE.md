@@ -59,4 +59,4 @@ game.settings.register('pf2e-customizations', 'featureName', {
 
 ## Feature-Specific Guidance
 
-Implementation notes for individual features live alongside their code, not here — see `scripts/features/item-durability/CLAUDE.md`, `scripts/features/lock-picking/CLAUDE.md`, `scripts/features/timeline-puzzle/CLAUDE.md`, `scripts/features/alibi-matrix/CLAUDE.md`, and `scripts/features/fact-sifter/CLAUDE.md`.
+Implementation notes for individual features live alongside their code, not here — see `scripts/features/item-durability/CLAUDE.md`, `scripts/features/lock-picking/CLAUDE.md`, `scripts/features/timeline-puzzle/CLAUDE.md`, `scripts/features/alibi-matrix/CLAUDE.md`, `scripts/features/fact-sifter/CLAUDE.md`, and `scripts/features/jigsaw-puzzle/CLAUDE.md`.

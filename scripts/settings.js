@@ -109,4 +109,45 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleEnabled', {
+    name: 'pf2e-customizations.settings.jigsawPuzzle.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzle.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleCustomImageFolder', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleCustomImageFolder.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleCustomImageFolder.hint',
+    scope: 'world',
+    config: true,
+    type: String,
+    default: '',
+    filePicker: 'folder',
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleIncludeBundledWithCustom', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleIncludeBundledWithCustom.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleIncludeBundledWithCustom.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: true,
+    requiresReload: false,
+  });
+
+  game.settings.register('pf2e-customizations', 'jigsawPuzzleHideInstructions', {
+    name: 'pf2e-customizations.settings.jigsawPuzzleHideInstructions.name',
+    hint: 'pf2e-customizations.settings.jigsawPuzzleHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
 }

@@ -218,6 +218,47 @@ Enable via **Game Settings > Module Settings > Fact Sifter Minigame**.
 
 ---
 
+### Jigsaw Puzzle Minigame
+
+An image-reassembly puzzle that stands in for a flat investigation/perception-style skill check. The player reconstructs a shuffled picture by moving pieces from a tray into a matching grid, against a countdown timer.
+
+#### Request Jigsaw Puzzle (Macro)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.requestJigsawPuzzle();
+```
+
+**Usage (GM):**
+
+1. Run the macro.
+2. Pick the target **Character**, the **Skill** to check, a **DC**, and an optional **Circumstance Modifier**. **Allow Critical Outcomes** is on by default.
+3. Pick an **Image Source** — **Random** (default) draws from the module's bundled images plus any custom folder you've configured, or **Specific Image** to pin one exact picture for this request.
+4. Click **Send** — a chat card is posted publicly. The DC is never shown to players; it's rendered GM-only on the card.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Attempting the Puzzle (Player)
+
+1. Any player who owns the targeted PC can click **Attempt Puzzle** on the chat card. Only one attempt can be in flight at a time.
+2. The puzzle opens to a brief instructions screen first (skippable via a setting); clicking **Begin** shuffles the tray and starts the clock.
+3. Drag a piece from the tray into a grid slot to place it, drag between two placed pieces to swap them, or drag a placed piece back to the tray to remove it — clicking a piece then clicking a target works the same way if dragging is inconvenient. There's no penalty for a wrong placement: a slot will happily hold the wrong piece, so compare against how the picture should look and rearrange freely. Click **Check Puzzle** any time to test the current arrangement — a wrong or incomplete attempt costs nothing, so try freely.
+4. Solving it correctly stops the clock; running out of time scores the attempt based on the fraction of pieces that ended up in their correct slot.
+
+**Difficulty scaling:**
+- Grid size is derived from the DC alone (4×4 = 16 pieces at DC 15 or below, up to 6×5 = 30 pieces at DC 36+).
+- The time allowed scales with both the character's live skill total and the piece count — a bigger grid gets more time, not just the same clock stretched over more pieces.
+
+**Image source:**
+- By default, images are drawn at random from the module's bundled folder.
+- A GM can configure a custom image folder (**Jigsaw Puzzle: Custom Image Folder** setting) to add their own images to the random pool, optionally alongside the bundled ones (**Jigsaw Puzzle: Also Include Bundled Images**).
+- A GM can also pin one specific image for a single request via the macro's **Image Source** dropdown.
+
+Enable via **Game Settings > Module Settings > Jigsaw Puzzle Minigame**.
+
+---
+
 ## Installation
 
 ### Manual
@@ -249,6 +290,10 @@ Settings marked **World** are GM-only, under **Game Settings > Module Settings**
 | Skip Alibi Matrix Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
 | Fact Sifter Minigame | World (reload) | Off | Enable the interactive information-filtration puzzle |
 | Skip Fact Sifter Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Jigsaw Puzzle Minigame | World (reload) | Off | Enable the interactive image-reassembly puzzle |
+| Jigsaw Puzzle: Custom Image Folder | World | (none) | Optional folder of your own images to draw from at random |
+| Jigsaw Puzzle: Also Include Bundled Images | World | On | Also include the bundled images when a custom folder is set |
+| Skip Jigsaw Puzzle Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
 
 ---
 

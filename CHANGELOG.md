@@ -10,6 +10,8 @@
 - **Request Alibi Matrix** macro — GM-only macro, same request/claim/attempt flow as the timeline puzzle.
 - **The Fact Sifter** — An information-filtration puzzle standing in for a flat investigation/research check. The player highlights exactly the true fragments from a shuffled pool mixing a corroborating chain of facts with deceptive noise, using a repeated detail in the fragment text to trace which are true. Pool size and true-fact count come from the DC. At most difficulty levels a given "Lead" fact is also shown, closing an otherwise-unsolvable gap at the tail of the chain. Wrong guesses are free via **Confirm Findings**.
 - **Request Fact Sifter** macro — GM-only macro, same request/claim/attempt flow as the other two puzzles.
+- **Jigsaw Puzzle Minigame** — An image-reassembly puzzle standing in for a flat investigation/perception check. A picture (random from a bundled/custom image pool, or a GM-pinned specific image) is sliced into a grid of rectangular pieces; the player drags — or click-selects, then click-places — pieces from a scrambled tray into the matching grid, with wrong placements left freely correctable rather than blocked. Grid size (16 to 30 pieces) comes from the DC; the time allowed scales with both piece count and the acting character's live skill total. Wrong or incomplete attempts are free via **Check Puzzle**.
+- **Request Jigsaw Puzzle** macro — GM-only macro, same request/claim/attempt flow as the other puzzles, with an added choice between drawing a random image or pinning one specific image for the request.
 
 ## [1.0.0] — 2026-07-09
 

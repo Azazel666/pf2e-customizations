@@ -1,0 +1,67 @@
+<div class="jigsaw-puzzle-app {{#if (eq stage "puzzle")}}is-puzzle{{else}}is-instructions{{/if}}">
+  {{#if (eq stage "instructions")}}
+    <div class="jigsaw-puzzle-instructions">
+      <h2>{{localize "pf2e-customizations.jigsawPuzzle.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.jigsawPuzzle.instructionsBody"}}</p>
+      <p class="jigsaw-puzzle-piece-count-label">{{localize "pf2e-customizations.jigsawPuzzle.pieceCountLabel"}}: {{pieceCount}}</p>
+      <label class="jigsaw-puzzle-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.jigsawPuzzle.dontShowAgain"}}
+      </label>
+      <div class="jigsaw-puzzle-actions">
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.jigsawPuzzle.begin"}}</button>
+      </div>
+    </div>
+  {{else if helpVisible}}
+    <div class="jigsaw-puzzle-instructions">
+      <h2>{{localize "pf2e-customizations.jigsawPuzzle.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.jigsawPuzzle.instructionsBody"}}</p>
+      <div class="jigsaw-puzzle-actions">
+        <button type="button" data-action="closeHelp" class="default">{{localize "pf2e-customizations.jigsawPuzzle.closeHelp"}}</button>
+      </div>
+    </div>
+  {{else}}
+    <div class="jigsaw-puzzle-header-row">
+      <p class="jigsaw-puzzle-header">{{actorName}}</p>
+      <button type="button" class="jigsaw-puzzle-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.jigsawPuzzle.helpButton'}}">?</button>
+    </div>
+
+    {{#if started}}
+      <p class="jigsaw-puzzle-countdown-label">{{localize "pf2e-customizations.jigsawPuzzle.timeRemainingLabel"}}</p>
+      <p class="jigsaw-puzzle-countdown" data-jigsaw-puzzle-countdown>--:--</p>
+
+      <div class="jigsaw-puzzle-board">
+        <div class="jigsaw-puzzle-grid-column">
+          <div class="jigsaw-puzzle-grid-header-row">
+            <p class="jigsaw-puzzle-grid-label">{{localize "pf2e-customizations.jigsawPuzzle.gridLabel"}}</p>
+            <p class="jigsaw-puzzle-placed-count" data-jigsaw-puzzle-placed-count></p>
+          </div>
+          <div class="jigsaw-puzzle-grid"
+               data-jigsaw-puzzle-grid
+               style="grid-template-columns: repeat({{cols}}, 1fr); grid-template-rows: repeat({{rows}}, 1fr); aspect-ratio: {{aspectRatio}};">
+          </div>
+        </div>
+
+        <div class="jigsaw-puzzle-tray-column">
+          <p class="jigsaw-puzzle-tray-label">{{localize "pf2e-customizations.jigsawPuzzle.trayLabel"}}</p>
+          <div class="jigsaw-puzzle-tray"
+               data-jigsaw-puzzle-tray
+               style="grid-template-columns: repeat({{cols}}, 1fr); grid-template-rows: repeat({{rows}}, 1fr); aspect-ratio: {{aspectRatio}};">
+          </div>
+        </div>
+      </div>
+
+      <div class="jigsaw-puzzle-actions">
+        <button type="button" data-action="checkPuzzle" class="default">{{localize "pf2e-customizations.jigsawPuzzle.checkPuzzle"}}</button>
+      </div>
+    {{else}}
+      <div class="jigsaw-puzzle-ready">
+        <p>{{localize "pf2e-customizations.jigsawPuzzle.readyBody"}}</p>
+        <p class="jigsaw-puzzle-piece-count-label">{{localize "pf2e-customizations.jigsawPuzzle.pieceCountLabel"}}: {{pieceCount}}</p>
+        <div class="jigsaw-puzzle-actions">
+          <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.jigsawPuzzle.start"}}</button>
+        </div>
+      </div>
+    {{/if}}
+  {{/if}}
+</div>

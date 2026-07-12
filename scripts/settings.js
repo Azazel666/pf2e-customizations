@@ -150,4 +150,34 @@ export function registerSettings() {
     default: false,
     requiresReload: false,
   });
+
+  game.settings.register('pf2e-customizations', 'puzzleBoardEnabled', {
+    name: 'pf2e-customizations.settings.puzzleBoard.name',
+    hint: 'pf2e-customizations.settings.puzzleBoard.hint',
+    scope: 'world',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: true,
+  });
+
+  game.settings.register('pf2e-customizations', 'puzzleBoardHideInstructions', {
+    name: 'pf2e-customizations.settings.puzzleBoardHideInstructions.name',
+    hint: 'pf2e-customizations.settings.puzzleBoardHideInstructions.hint',
+    scope: 'client',
+    config: true,
+    type: Boolean,
+    default: false,
+    requiresReload: false,
+  });
+
+  // No UI — a thin index (id/name/journalEntryId/revealed/createdAt per puzzle), read/written only
+  // by scripts/features/puzzle-board/puzzle-board-data.js. See that file's own comments for why
+  // runtime puzzle state (difficulty/solved/pieces) deliberately isn't mirrored here.
+  game.settings.register('pf2e-customizations', 'puzzleBoardIndex', {
+    scope: 'world',
+    config: false,
+    type: Object,
+    default: { puzzles: [] },
+  });
 }

@@ -1,0 +1,44 @@
+<div class="puzzle-board-app">
+  {{#if isLoading}}
+    <p class="puzzle-board-loading">{{localize "pf2e-customizations.puzzleBoard.app.loading"}}</p>
+  {{else if isInstructions}}
+    <div class="puzzle-board-instructions">
+      <h2>{{localize "pf2e-customizations.puzzleBoard.app.instructionsTitle"}}</h2>
+      <p>{{localize "pf2e-customizations.puzzleBoard.app.instructionsBody"}}</p>
+      <label class="puzzle-board-dont-show-again">
+        <input type="checkbox" data-dont-show-again>
+        {{localize "pf2e-customizations.puzzleBoard.app.dontShowAgain"}}
+      </label>
+      <div class="puzzle-board-instructions-actions">
+        <button type="button" data-action="begin" class="default">{{localize "pf2e-customizations.puzzleBoard.app.begin"}}</button>
+      </div>
+    </div>
+  {{else if isSolved}}
+    <div class="puzzle-board-solved">
+      <p class="puzzle-board-header">{{puzzleName}}</p>
+      <img class="puzzle-board-solved-image" src="{{imagePath}}" alt="{{puzzleName}}">
+    </div>
+  {{else}}
+    <div class="puzzle-board-header-row">
+      <p class="puzzle-board-header">{{puzzleName}}</p>
+      <p class="puzzle-board-placed-count" data-puzzle-board-placed-count></p>
+    </div>
+
+    <div class="puzzle-board-toolbar">
+      <button type="button" data-action="zoomOut" title="{{localize 'pf2e-customizations.puzzleBoard.app.zoomOut'}}">&minus;</button>
+      <button type="button" data-action="zoomIn" title="{{localize 'pf2e-customizations.puzzleBoard.app.zoomIn'}}">+</button>
+      <button type="button" data-action="centerView">{{localize "pf2e-customizations.puzzleBoard.app.centerView"}}</button>
+    </div>
+
+    <div class="puzzle-board-viewport" data-puzzle-board-viewport>
+      <div class="puzzle-board-board" data-puzzle-board-board style="width:{{boardWidthPx}}px;height:{{boardHeightPx}}px;">
+        <div class="puzzle-board-target-guide"
+             style="left:{{imageOffsetXPercent}}%;top:{{imageOffsetYPercent}}%;width:{{imageWidthPercent}}%;height:{{imageHeightPercent}}%;"></div>
+        <div class="puzzle-board-tray-guide"
+             style="left:{{trayOffsetXPercent}}%;top:{{trayOffsetYPercent}}%;width:{{trayWidthPercent}}%;height:{{trayHeightPercent}}%;">
+          <p class="puzzle-board-tray-label">{{localize "pf2e-customizations.puzzleBoard.app.trayLabel"}}</p>
+        </div>
+      </div>
+    </div>
+  {{/if}}
+</div>

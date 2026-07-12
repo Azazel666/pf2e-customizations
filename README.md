@@ -259,6 +259,54 @@ Enable via **Game Settings > Module Settings > Jigsaw Puzzle Minigame**.
 
 ---
 
+### Puzzle Board Minigame
+
+A persistent, collaborative free-drag puzzle board — unlike every other minigame in this module, it doesn't stand in for a dice roll. Instead, a PC's real skill/Perception check permanently sets how hard a given puzzle is to solve. Any number of players can work on it together, with no timer, across as many sessions as it takes, as a downtime activity.
+
+#### Manage Puzzle Boards (Macro, GM)
+
+**Setup:** Create a GM world macro (or hotbar macro) with this single line:
+
+```js
+pf2eCustomizations.managePuzzleBoards();
+```
+
+**Usage (GM):**
+
+1. Run the macro to open the Manage Puzzle Boards window.
+2. Click **Create Puzzle** — give it a name, pick an image, and set a piece count (default 24).
+3. Click **Request Difficulty Roll** on that puzzle's row — pick the PC, the skill (or Perception) to roll, a DC, and an optional circumstance modifier (told to the player as a note, not applied automatically). This posts a chat card asking that PC to roll, with a **Roll Now** convenience button.
+4. Once the PC's roll resolves — automatically, the moment a matching check lands in chat, or manually via **Resolve Manually** if no GM was online at the time — the puzzle's difficulty locks in permanently and the row shows **Ready to reveal**.
+5. Click **Reveal to Party** — this posts a public chat card with an **Open Puzzle** button, and makes the puzzle available to the Open Puzzle Board macro below.
+
+Rename or delete a puzzle at any time from its row. There's no "replace image" option — since a puzzle's pieces are generated from its image, changing the image means deleting and recreating the puzzle.
+
+This macro is always available once the module is enabled — no additional setting required. Only the GM can run it.
+
+#### Open Puzzle Board (Macro, Player)
+
+**Setup:** Create a world macro (or hotbar macro, usable by any player) with this single line:
+
+```js
+pf2eCustomizations.openPuzzleBoard();
+```
+
+**Usage:**
+
+1. Run the macro (or click **Open Puzzle** on the reveal chat card). If only one puzzle has been revealed, it opens directly; otherwise, pick one from a short list.
+2. Drag pieces around freely — there are no discrete slots. A dashed rectangle marks about where the finished picture belongs; a solid-bordered **Tray** area below it is where pieces start out, piled up and overlapping.
+3. Pieces don't need to be pixel-perfect, just close to their spot — once every piece is close enough, the puzzle completes automatically for everyone.
+4. Anyone can help, at any time, across as many sessions as it takes — there's no timer and no penalty for stepping away mid-puzzle. The window can be reopened later exactly where it was left off.
+5. Zoom in/out and use **Center View** as needed — the board's width automatically matches the window and rescales live as you resize it.
+
+**Difficulty scaling:**
+- The GM's requested check's degree of success sets the puzzle's piece shape, once, forever: a **critical success** cuts the most jagged, irregular pieces (easiest to visually sort, since jagged edges hint at which piece goes where — like a real jigsaw's interlocking shapes); a **critical failure** cuts perfectly uniform squares (hardest, since every piece looks identical with no cue about where it belongs).
+- Piece count is set once by the GM at creation and doesn't change with the roll.
+
+Enable via **Game Settings > Module Settings > Puzzle Board Minigame**.
+
+---
+
 ## Installation
 
 ### Manual
@@ -294,6 +342,8 @@ Settings marked **World** are GM-only, under **Game Settings > Module Settings**
 | Jigsaw Puzzle: Custom Image Folder | World | (none) | Optional folder of your own images to draw from at random |
 | Jigsaw Puzzle: Also Include Bundled Images | World | On | Also include the bundled images when a custom folder is set |
 | Skip Jigsaw Puzzle Instructions | Client | Off | Don't show the how-to-play screen before each attempt |
+| Puzzle Board Minigame | World (reload) | Off | Enable the persistent, collaborative free-drag puzzle board |
+| Skip Puzzle Board Instructions | Client | Off | Don't show the how-to-play screen before opening a puzzle board |
 
 ---
 

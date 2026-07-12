@@ -5,6 +5,7 @@ import { initTimelinePuzzle } from './features/timeline-puzzle/timeline-puzzle-c
 import { initAlibiMatrix } from './features/alibi-matrix/alibi-matrix-chat.js';
 import { initFactSifter } from './features/fact-sifter/fact-sifter-chat.js';
 import { initJigsawPuzzle } from './features/jigsaw-puzzle/jigsaw-puzzle-chat.js';
+import { initPuzzleBoard } from './features/puzzle-board/puzzle-board-roll-listener.js';
 import { initSetItemDurabilityMacro } from './macros/set-item-durability.js';
 import { initApplyItemDamageMacro } from './macros/apply-item-damage.js';
 import { initRequestLockPickMacro } from './macros/request-lock-pick.js';
@@ -12,6 +13,8 @@ import { initRequestTimelinePuzzleMacro } from './macros/request-timeline-puzzle
 import { initRequestAlibiMatrixMacro } from './macros/request-alibi-matrix.js';
 import { initRequestFactSifterMacro } from './macros/request-fact-sifter.js';
 import { initRequestJigsawPuzzleMacro } from './macros/request-jigsaw-puzzle.js';
+import { initManagePuzzleBoardsMacro } from './macros/manage-puzzle-boards.js';
+import { initOpenPuzzleBoardMacro } from './macros/open-puzzle-board.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -40,6 +43,10 @@ Hooks.once('init', () => {
     initJigsawPuzzle();
   }
 
+  if (game.settings.get('pf2e-customizations', 'puzzleBoardEnabled')) {
+    initPuzzleBoard();
+  }
+
   initSetItemDurabilityMacro();
   initApplyItemDamageMacro();
   initRequestLockPickMacro();
@@ -47,4 +54,6 @@ Hooks.once('init', () => {
   initRequestAlibiMatrixMacro();
   initRequestFactSifterMacro();
   initRequestJigsawPuzzleMacro();
+  initManagePuzzleBoardsMacro();
+  initOpenPuzzleBoardMacro();
 });

@@ -34,7 +34,8 @@
     "styles/features/timeline-puzzle.css",
     "styles/features/alibi-matrix.css",
     "styles/features/fact-sifter.css",
-    "styles/features/jigsaw-puzzle.css"
+    "styles/features/jigsaw-puzzle.css",
+    "styles/features/puzzle-board.css"
   ],
   "languages": [
     {

@@ -22,7 +22,7 @@
       </div>
     </div>
   {{else}}
-    <div class="lock-picking-puzzle{{#if shattered}} is-shattered{{/if}}">
+    <div class="lock-picking-puzzle{{#if shattered}} is-shattered{{/if}}{{#if celebrating}} is-celebrating{{/if}}">
       <div class="lock-picking-header-row">
         <p class="lock-picking-header">{{actorName}}</p>
         <button type="button" class="lock-picking-help-button" data-action="showHelp" title="{{localize 'pf2e-customizations.lockPicking.helpButton'}}">?</button>

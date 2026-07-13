@@ -23,6 +23,7 @@ const JITTER_FACTOR = 0.25;
 const MAX_JITTER_PX = 3;
 const MIN_DRAG_RADIUS_PX = 16; // atan2 is numerically unstable this close to the dial center
 const SHATTER_ANIMATION_MS = 650;
+const CRIT_SUCCESS_ANIMATION_MS = 450;
 // Extra breathing room (beyond the resistance zone itself) kept between a freshly (re)randomized
 // window and the dial's fixed 0° start angle, so the player always begins in the free zone with
 // some runway before any resistance, instead of possibly starting on top of (or inside) it.
@@ -97,11 +98,13 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   #pinWindows = [];
   #activeIndex = 0;
   #mistakes = 0;
+  #hadStrain = false;
   #justMistake = false;
   #justSetPin = false;
   #resolved = false;
   #result = null;
   #shattered = false;
+  #celebrating = false;
   #inputLocked = false;
   #helpVisible = false;
 
@@ -138,6 +141,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
     this.#pinWindows = Array.from({ length: this.#pinCount }, () => this.#randomizeSafeWindowCenter());
     this.#activeIndex = 0;
     this.#mistakes = 0;
+    this.#hadStrain = false;
     this.#justMistake = false;
     this.#initDial();
   }
@@ -174,6 +178,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       mistakeThreshold: this.#mistakeThreshold,
       warningMistakes: this.#mistakes >= this.#mistakeThreshold - 1,
       shattered: this.#shattered,
+      celebrating: this.#celebrating,
       helpVisible: this.#helpVisible,
       mistake: this.#justMistake,
       justSet: this.#justSetPin,
@@ -306,7 +311,10 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       // while a fast blind flick-through minimizes time-in-band and is rewarded instead — backwards
       // from the intended "deliberate is safer" feel.
       const closingIn = dial.lastDistanceDeg !== null && distanceDeg < dial.lastDistanceDeg;
-      if (!closingIn) dial.strainMs += deltaMs;
+      if (!closingIn) {
+        dial.strainMs += deltaMs;
+        this.#hadStrain = true;
+      }
       shakeDeg = Math.min(MAX_JITTER_DEG, (dial.resistanceZoneDeg - distanceDeg) * JITTER_FACTOR);
     } else {
       dial.strainMs = 0;
@@ -406,7 +414,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
     this.#activeIndex += 1;
 
     if (this.#activeIndex >= this.#pinCount) {
-      this.#finish(this.#mistakes === 0 ? 'criticalSuccess' : 'success', true);
+      this.#finish(!this.#hadStrain ? 'criticalSuccess' : 'success', true);
       return;
     }
 
@@ -469,6 +477,11 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       this.render();
       playOneShot(SOUND_PICK_BREAK);
       await new Promise((resolve) => setTimeout(resolve, SHATTER_ANIMATION_MS));
+    } else if (outcome === 'criticalSuccess') {
+      this.#celebrating = true;
+      this.render();
+      playOneShot(SOUND_CLICK);
+      await new Promise((resolve) => setTimeout(resolve, CRIT_SUCCESS_ANIMATION_MS));
     }
 
     if (this.rendered) this.close();

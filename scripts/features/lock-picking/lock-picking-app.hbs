@@ -30,19 +30,17 @@
       <p class="lock-picking-mistakes{{#if warningMistakes}} is-warning{{/if}}">
         {{localize "pf2e-customizations.lockPicking.mistakes"}}: {{mistakes}} / {{mistakeThreshold}}
       </p>
-      <div class="lock-picking-pins">
-        {{#each pins}}
-          <div class="lock-picking-pin is-{{state}}{{#if mistake}} is-mistake{{/if}}{{#if justSet}} is-just-set{{/if}}">
-            <div class="lock-picking-pin-dial-label">{{localize "pf2e-customizations.lockPicking.pinDialLabel"}}</div>
-            <div class="lock-picking-pin-dial" data-pin-index="{{index}}">
-              <div class="lock-picking-pin-dial-jitter">
-                <div class="lock-picking-pin-dial-face"></div>
-                <div class="lock-picking-pin-dial-debug"></div>
-                <div class="lock-picking-pin-dial-indicator"></div>
-              </div>
-            </div>
+      <p class="lock-picking-pins-progress">
+        {{localize "pf2e-customizations.lockPicking.pinsProgress"}}: {{pinsSet}} / {{pinCount}}
+      </p>
+      <div class="lock-picking-lock{{#if mistake}} is-mistake{{/if}}{{#if justSet}} is-just-set{{/if}}">
+        <div class="lock-picking-lock-dial">
+          <div class="lock-picking-lock-image"></div>
+          <div class="lock-picking-lock-debug"></div>
+          <div class="lock-picking-lock-pick-wrap">
+            <div class="lock-picking-lock-pick"></div>
           </div>
-        {{/each}}
+        </div>
       </div>
       <div class="lock-picking-actions">
         <button type="button" data-action="giveUp">{{localize "pf2e-customizations.lockPicking.giveUp"}}</button>

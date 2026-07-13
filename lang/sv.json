@@ -55,7 +55,7 @@
   "pf2e-customizations.lockPicking.instructionsTitle": "Så här dyrkar du upp låset",
   "pf2e-customizations.lockPicking.instructionsBody": "Dra i varje pinne för att vrida den. Den gör motstånd och skakar när du pressar utan att hitta spåret; släpp innan den gjort motstånd för länge så håller den still säkert. Hitta läget där den vrider sig fritt och klicka sedan på Sätt pinne. Pressar du för hårt för länge slår pinnen tillbaka till start och kostar dig ett misstag — för många misstag och dyrkverktyget går sönder. Ge upp när som helst för att gå därifrån med ett säkert misslyckande istället för att riskera det.",
   "pf2e-customizations.lockPicking.pinCountLabel": "Pinnar",
-  "pf2e-customizations.lockPicking.pinDialLabel": "Pinne",
+  "pf2e-customizations.lockPicking.pinsProgress": "Pinnar",
   "pf2e-customizations.lockPicking.dontShowAgain": "Visa inte detta igen",
   "pf2e-customizations.lockPicking.helpButton": "Hur man spelar",
   "pf2e-customizations.lockPicking.closeHelp": "Tillbaka till låset",

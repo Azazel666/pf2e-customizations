@@ -55,7 +55,7 @@
   "pf2e-customizations.lockPicking.instructionsTitle": "How to Pick This Lock",
   "pf2e-customizations.lockPicking.instructionsBody": "Drag each pin to rotate it. It'll resist and shudder as you push it without finding the notch; ease off before it fights back too long and it'll hold its ground safely. Find the spot where it turns freely, then click Set Pin. Pushing too hard for too long snaps it back to start and costs you a mistake — too many mistakes and the pick breaks. Give Up at any time to walk away with a safe failure instead of risking that.",
   "pf2e-customizations.lockPicking.pinCountLabel": "Pins",
-  "pf2e-customizations.lockPicking.pinDialLabel": "Pin",
+  "pf2e-customizations.lockPicking.pinsProgress": "Pins",
   "pf2e-customizations.lockPicking.dontShowAgain": "Don't show this again",
   "pf2e-customizations.lockPicking.helpButton": "How to play",
   "pf2e-customizations.lockPicking.closeHelp": "Back to Lock",

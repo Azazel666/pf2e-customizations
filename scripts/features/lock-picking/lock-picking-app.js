@@ -23,10 +23,15 @@ const JITTER_FACTOR = 0.25;
 const MAX_JITTER_PX = 3;
 const MIN_DRAG_RADIUS_PX = 16; // atan2 is numerically unstable this close to the dial center
 const SHATTER_ANIMATION_MS = 650;
+const CRIT_SUCCESS_ANIMATION_MS = 450;
 // Extra breathing room (beyond the resistance zone itself) kept between a freshly (re)randomized
 // window and the dial's fixed 0° start angle, so the player always begins in the free zone with
 // some runway before any resistance, instead of possibly starting on top of (or inside) it.
 const STARTING_SAFE_BUFFER_DEG = 15;
+// lockpick.webp's art is drawn with its long axis horizontal (handle right, pick tip left), but the
+// rest of the physics/debug-overlay code uses a "0deg = up, clockwise" convention. This constant
+// rotates the art into that convention before the live currentAngleDeg is applied on top.
+const PICK_BASE_ROTATION_DEG = 90;
 
 function playOneShot(src, volume = 0.6) {
   foundry.audio.AudioHelper.play({ src, volume, autoplay: true, loop: false }, false);
@@ -90,15 +95,16 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   #mistakeThreshold;
   #resolve;
   #stage = 'instructions';
-  #pins = [];
   #pinWindows = [];
   #activeIndex = 0;
   #mistakes = 0;
-  #lastMistakeIndex = null;
-  #lastSetIndex = null;
+  #hadStrain = false;
+  #justMistake = false;
+  #justSetPin = false;
   #resolved = false;
   #result = null;
   #shattered = false;
+  #celebrating = false;
   #inputLocked = false;
   #helpVisible = false;
 
@@ -132,11 +138,11 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   #setupPins() {
-    this.#pins = Array.from({ length: this.#pinCount }, (_, i) => ({ state: i === 0 ? 'active' : 'pending' }));
     this.#pinWindows = Array.from({ length: this.#pinCount }, () => this.#randomizeSafeWindowCenter());
     this.#activeIndex = 0;
     this.#mistakes = 0;
-    this.#lastMistakeIndex = null;
+    this.#hadStrain = false;
+    this.#justMistake = false;
     this.#initDial();
   }
 
@@ -167,29 +173,27 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       actorName: this.#actor.name,
       dc: this.#dc,
       pinCount: this.#pinCount,
+      pinsSet: this.#activeIndex,
       mistakes: this.#mistakes,
       mistakeThreshold: this.#mistakeThreshold,
       warningMistakes: this.#mistakes >= this.#mistakeThreshold - 1,
       shattered: this.#shattered,
+      celebrating: this.#celebrating,
       helpVisible: this.#helpVisible,
-      pins: this.#pins.map((pin, index) => ({
-        index,
-        state: pin.state,
-        mistake: index === this.#lastMistakeIndex,
-        justSet: index === this.#lastSetIndex,
-      })),
+      mistake: this.#justMistake,
+      justSet: this.#justSetPin,
     };
   }
 
   _onRender(context, options) {
     super._onRender(context, options);
-    this.#lastMistakeIndex = null;
-    this.#lastSetIndex = null;
+    this.#justMistake = false;
+    this.#justSetPin = false;
 
     if (this.#stage !== 'puzzle' || this.#helpVisible) return;
-    const activePin = this.element.querySelector('.lock-picking-pin.is-active');
-    this.#dialIndicatorEl = activePin?.querySelector('.lock-picking-pin-dial-indicator') ?? null;
-    this.#dialJitterEl = activePin?.querySelector('.lock-picking-pin-dial-jitter') ?? null;
+    const dialEl = this.element.querySelector('.lock-picking-lock-dial');
+    this.#dialIndicatorEl = dialEl?.querySelector('.lock-picking-lock-pick') ?? null;
+    this.#dialJitterEl = dialEl?.querySelector('.lock-picking-lock-pick-wrap') ?? null;
 
     // Re-paint immediately so a discrete render (pin advance, mistake, shatter) doesn't wait for the
     // next rAF frame to reflect the current physics state on the freshly-generated DOM nodes.
@@ -197,10 +201,9 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
 
     // Debug aid, off by default (lockPickingDebugShowWindow) — the window position is fixed for the
     // whole time this pin is active, so it only needs painting once per render, not every rAF tick.
-    const debugEl = activePin?.querySelector('.lock-picking-pin-dial-debug');
+    const debugEl = dialEl?.querySelector('.lock-picking-lock-debug');
     if (debugEl) debugEl.style.background = this.#buildDebugBackground();
 
-    const dialEl = activePin?.querySelector('.lock-picking-pin-dial');
     if (!dialEl || this.#inputLocked) return;
     dialEl.addEventListener('pointerdown', (event) => this.#onPointerDown(event, dialEl));
   }
@@ -236,7 +239,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   // discards and replaces the dial node, silently releasing pointer capture) doesn't drop the drag.
   #onPointerMove(event) {
     if (this.#inputLocked || !this.#dial) return;
-    const dialEl = this.element.querySelector('.lock-picking-pin.is-active .lock-picking-pin-dial');
+    const dialEl = this.element.querySelector('.lock-picking-lock-dial');
     if (!dialEl) return;
 
     const rect = dialEl.getBoundingClientRect();
@@ -308,7 +311,10 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       // while a fast blind flick-through minimizes time-in-band and is rewarded instead — backwards
       // from the intended "deliberate is safer" feel.
       const closingIn = dial.lastDistanceDeg !== null && distanceDeg < dial.lastDistanceDeg;
-      if (!closingIn) dial.strainMs += deltaMs;
+      if (!closingIn) {
+        dial.strainMs += deltaMs;
+        this.#hadStrain = true;
+      }
       shakeDeg = Math.min(MAX_JITTER_DEG, (dial.resistanceZoneDeg - distanceDeg) * JITTER_FACTOR);
     } else {
       dial.strainMs = 0;
@@ -325,7 +331,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
 
   #renderDialTransform(shakeDeg) {
     if (this.#dialIndicatorEl?.isConnected) {
-      this.#dialIndicatorEl.style.transform = `rotate(${this.#dial.currentAngleDeg}deg)`;
+      this.#dialIndicatorEl.style.transform = `rotate(${PICK_BASE_ROTATION_DEG + this.#dial.currentAngleDeg}deg)`;
     }
     if (this.#dialJitterEl?.isConnected) {
       if (shakeDeg > 0) {
@@ -384,7 +390,7 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   #registerMistake() {
     this.#stopStrainLoopSound();
     this.#mistakes += 1;
-    this.#lastMistakeIndex = this.#activeIndex;
+    this.#justMistake = true;
 
     // Preserve where the physical pointer actually is so delta tracking stays continuous across
     // the reset instead of the next move producing one huge jump.
@@ -404,16 +410,14 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
   }
 
   #advancePin() {
-    this.#pins[this.#activeIndex].state = 'set';
-    this.#lastSetIndex = this.#activeIndex;
+    this.#justSetPin = true;
     this.#activeIndex += 1;
 
     if (this.#activeIndex >= this.#pinCount) {
-      this.#finish(this.#mistakes === 0 ? 'criticalSuccess' : 'success', true);
+      this.#finish(!this.#hadStrain ? 'criticalSuccess' : 'success', true);
       return;
     }
 
-    this.#pins[this.#activeIndex].state = 'active';
     this.#initDial();
     this.render();
   }
@@ -473,6 +477,11 @@ export class LockPickingApp extends foundry.applications.api.HandlebarsApplicati
       this.render();
       playOneShot(SOUND_PICK_BREAK);
       await new Promise((resolve) => setTimeout(resolve, SHATTER_ANIMATION_MS));
+    } else if (outcome === 'criticalSuccess') {
+      this.#celebrating = true;
+      this.render();
+      playOneShot(SOUND_CLICK);
+      await new Promise((resolve) => setTimeout(resolve, CRIT_SUCCESS_ANIMATION_MS));
     }
 
     if (this.rendered) this.close();

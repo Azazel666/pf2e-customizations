@@ -25,7 +25,11 @@ function statusHtml(config, state, actor) {
   const i18n = (key) => game.i18n.localize(`pf2e-customizations.lockPicking.card.${key}`);
   const isOwner = actor?.isOwner ?? false;
 
-  if (state.resolved === 'criticalSuccess' || state.resolved === 'success') {
+  if (state.resolved === 'criticalSuccess') {
+    return `<p class="lock-picking-card-outcome is-critical-success">${i18n(state.resolved)}</p>`;
+  }
+
+  if (state.resolved === 'success') {
     return `<p class="lock-picking-card-outcome is-success">${i18n(state.resolved)}</p>`;
   }
 

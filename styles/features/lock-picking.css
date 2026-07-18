@@ -46,102 +46,94 @@
   font-weight: bold;
 }
 
-.lock-picking-pins {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin: 12px 0;
+.lock-picking-pins-progress {
+  margin: 0 0 8px;
 }
 
-.lock-picking-pin {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 96px;
-  opacity: 0.5;
+/* Displayed square size of the lock face; the keyhole pivot below is derived from this. */
+.lock-picking-lock {
+  width: 220px;
+  margin: 12px auto;
 }
 
-.lock-picking-pin.is-active {
-  opacity: 1;
+/* A tinted overlay on top of the lock art, not the art's own background — animating the image's
+   background directly would replace it with a flat color for the duration of the flash. */
+.lock-picking-lock-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
 }
 
-.lock-picking-pin.is-set {
-  opacity: 0.85;
-}
-
-.lock-picking-pin.is-mistake .lock-picking-pin-dial-face {
+.lock-picking-lock.is-mistake .lock-picking-lock-image::after {
   animation: lock-picking-mistake-flash 0.4s ease-out;
 }
 
-.lock-picking-pin.is-set .lock-picking-pin-dial-face {
-  background: #16a34a;
-}
-
-.lock-picking-pin.is-just-set .lock-picking-pin-dial-face {
+.lock-picking-lock.is-just-set .lock-picking-lock-image::after {
   animation: lock-picking-pin-set-flash 0.3s ease-out;
 }
 
-.lock-picking-pin-dial-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  opacity: 0.8;
-}
-
-.lock-picking-pin-dial {
+.lock-picking-lock-dial {
   position: relative;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto;
+  width: 100%;
+  height: 220px;
   cursor: grab;
   touch-action: none;
 }
 
-.lock-picking-pin-dial:active {
+.lock-picking-lock-dial:active {
   cursor: grabbing;
 }
 
-.lock-picking-pin:not(.is-active) .lock-picking-pin-dial {
-  pointer-events: none;
-}
-
-.lock-picking-pin-dial-jitter {
-  width: 100%;
-  height: 100%;
-}
-
-/* Static ring, no visual hint of window position — proximity is felt (jitter/resistance), never seen. */
-.lock-picking-pin-dial-face {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #374151;
-  border: 2px solid #1f2937;
+.lock-picking-lock-image {
+  position: absolute;
+  inset: 0;
+  background: url(../../assets/features/lock-picking/lock.webp) center / contain no-repeat;
+  border-radius: 8px;
 }
 
 /* Debug-only aid (lockPickingDebugShowWindow client setting): background is a conic-gradient set
-   inline from JS marking the safe/strain zones, left empty (transparent) when the setting is off. */
-.lock-picking-pin-dial-debug {
+   inline from JS marking the safe/strain zones, left empty (transparent) when the setting is off.
+   Centered on the same keyhole pivot as the pick (see .lock-picking-lock-pick-wrap below). */
+.lock-picking-lock-debug {
   position: absolute;
-  inset: 0;
+  width: 90px;
+  height: 90px;
+  left: 50%;
+  top: calc(50% - 4px);
+  transform: translate(-50%, -50%);
   border-radius: 50%;
   pointer-events: none;
 }
 
-/* Rewritten every animation frame from JS (see #renderDialTransform in lock-picking-app.js),
-   not a CSS @keyframes animation — the physics-driven rotation/lerp/jitter values are continuous
-   and unpredictable, unlike the rest of this file's discrete, class-triggered one-shot animations. */
-.lock-picking-pin-dial-indicator {
+/* Pivot wrapper: positioned at the keyhole (horizontally centered, ~10px above vertical center on
+   the native 512px art, scaled proportionally here) and used as the jitter-translate target.
+   Rewritten every animation frame from JS (see #renderDialTransform in lock-picking-app.js), not a
+   CSS @keyframes animation — the physics-driven rotation/lerp/jitter values are continuous and
+   unpredictable, unlike the rest of this file's discrete, class-triggered one-shot animations. */
+.lock-picking-lock-pick-wrap {
   position: absolute;
-  top: 8px;
   left: 50%;
-  width: 4px;
-  height: 28px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: #e5e7eb;
-  transform-origin: 2px 28px;
+  top: calc(50% - 4px);
+  width: 0;
+  height: 0;
+  will-change: transform;
+}
+
+/* The pick tip (left edge, vertical center of the 474x52 source) is anchored at the wrap's pivot
+   point via transform-origin; the handle (right end) is what visibly swings around it.
+   A background-image div, not an <img> — a raw <img src="modules/..."> inside a Handlebars-rendered
+   part is resolved against the parser's base URI (not the game root) and silently fails to load,
+   the same reason lock.webp above is a CSS background rather than an <img>. */
+.lock-picking-lock-pick {
+  position: absolute;
+  left: 0;
+  top: -9px;
+  width: 160px;
+  height: 18px;
+  background: url(../../assets/features/lock-picking/lockpick.webp) center / contain no-repeat;
+  transform-origin: 4px 9px;
   will-change: transform;
 }
 
@@ -156,18 +148,26 @@
   pointer-events: none;
 }
 
-.lock-picking-puzzle.is-shattered .lock-picking-pin-dial-jitter {
+.lock-picking-puzzle.is-shattered .lock-picking-lock-dial {
   animation: lock-picking-shatter 0.65s ease-out forwards;
 }
 
+.lock-picking-puzzle.is-celebrating {
+  pointer-events: none;
+}
+
+.lock-picking-puzzle.is-celebrating .lock-picking-lock-dial {
+  animation: lock-picking-crit-success 0.45s ease-out forwards;
+}
+
 @keyframes lock-picking-mistake-flash {
-  0% { background: #dc2626; }
-  100% { background: #374151; }
+  0% { background: rgba(220, 38, 38, 0.55); }
+  100% { background: transparent; }
 }
 
 @keyframes lock-picking-pin-set-flash {
-  0% { background: #16a34a; box-shadow: 0 0 8px #16a34a; }
-  100% { background: #16a34a; box-shadow: none; }
+  0% { background: rgba(22, 163, 74, 0.5); box-shadow: 0 0 12px #16a34a; }
+  100% { background: transparent; box-shadow: none; }
 }
 
 @keyframes lock-picking-shatter {
@@ -177,6 +177,12 @@
   45% { transform: translate(-3px, -2px); }
   60% { transform: translate(2px, 2px); }
   100% { filter: grayscale(1) brightness(0.6); transform: translate(0, 0); }
+}
+
+@keyframes lock-picking-crit-success {
+  0% { filter: none; transform: scale(1); }
+  40% { filter: drop-shadow(0 0 14px #fbbf24) brightness(1.3); transform: scale(1.06); }
+  100% { filter: drop-shadow(0 0 14px #fbbf24) brightness(1.15); transform: scale(1.03); }
 }
 
 .lock-picking-card-gm-dc {
@@ -197,6 +203,11 @@
 
 .lock-picking-card-outcome.is-success {
   color: #16a34a;
+}
+
+.lock-picking-card-outcome.is-critical-success {
+  color: #b45309;
+  text-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
 }
 
 .lock-picking-card-outcome.is-failure {

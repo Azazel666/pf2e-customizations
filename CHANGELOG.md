@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0] — TBD
+## [1.1.0] — 2026-07-19
 
 ### Added
 
@@ -15,6 +15,7 @@
 - **Puzzle Board Minigame** — A persistent, collaborative free-drag puzzle board that, unlike every other minigame in this module, doesn't stand in for a dice roll: a PC's real skill/Perception check permanently sets how hard a given puzzle is to solve, once. Any number of players can work on it together with no timer, across as many sessions as it takes, as a downtime activity. Pieces start piled up in a tray and are dragged freely (not into discrete slots) onto an assembly area; the puzzle completes automatically once every piece is close enough to its correct spot. The board's width tracks the window live. A critical success on the difficulty check cuts the most jagged pieces (easiest to visually sort); a critical failure cuts perfectly uniform squares (hardest, since every piece looks identical).
 - **Manage Puzzle Boards** macro — GM-only macro for creating/renaming/deleting puzzles, requesting the difficulty-determining roll from a chosen PC, resolving that roll manually if needed, and revealing a puzzle to the party (which also posts a public chat card with an Open Puzzle button).
 - **Open Puzzle Board** macro — player-facing macro (unlike every other request macro, not GM-only) that opens a revealed puzzle directly, or offers a picker if more than one has been revealed.
+- **Lock Picking Minigame** — the mini-game has been changed to look like a lock with a pin that is moved around instead of dails. 
 
 ## [1.0.0] — 2026-07-09
 
